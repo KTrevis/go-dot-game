@@ -1,8 +1,6 @@
 package main
 
 import (
-	"server/srcs/database"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
@@ -21,7 +19,7 @@ func createWebsocket(context *gin.Context) {
 }
 
 func main() {
-	manager.DB = database.Setup()
+	manager.db = SetupDB()
 	router := gin.Default()
 	router.GET("/websocket", createWebsocket)
 	router.Run(":8080")

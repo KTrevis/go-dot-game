@@ -9,7 +9,7 @@ import (
 
 type WebSocketManager struct {
 	Clients map[*websocket.Conn]*Client
-	DB      *mongo.Database
+	db      *mongo.Database
 	mutex   sync.Mutex
 }
 

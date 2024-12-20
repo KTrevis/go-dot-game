@@ -78,7 +78,7 @@ func (client *Client) registerLogin() bool {
 		return false
 	}
 
-	id, err := credentials.RegisterLogin(client.manager.DB, client)
+	id, err := credentials.RegisterLogin(client.manager.db, client)
 
 	if err != nil {
 		client.sendMessage(&Dictionary{"error": err.Error()})
