@@ -2,14 +2,13 @@ package srcs
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"server/srcs/database"
 
 	"github.com/gorilla/websocket"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
+type Dictionary map[string]interface{}
 type MessageType int
 
 const (
@@ -17,17 +16,25 @@ const (
 	REGISTER_LOGIN
 )
 
+func MessageTypeToString(msgType MessageType) string {
+	switch msgType {
+	case MessageType(NONE):
+		return "NONE"
+	case MessageType(REGISTER_LOGIN):
+		return "REGISTER_LOGIN"
+	}
+	return "UNKNOWN"
+}
+
 type Client struct {
-	username    string
-	msgType     MessageType
-	socket      *websocket.Conn
-	manager     *WebSocketManager
-	mongoClient *mongo.Client
+	user    *database.User
+	msgType MessageType
+	socket  *websocket.Conn
+	manager *WebSocketManager
 }
 
 func (client *Client) Loop() {
 	for {
-		fmt.Println()
 		_, message, err := client.socket.ReadMessage()
 		if err != nil {
 			client.manager.RemoveClient(client.socket)
@@ -39,7 +46,7 @@ func (client *Client) Loop() {
 			if err != nil {
 				continue
 			}
-			log.Printf("received message of type %d", MessageType(client.msgType))
+			log.Printf("Received message of type %s from client %s", MessageTypeToString(client.msgType), client.user)
 		}
 
 		switch client.msgType {
@@ -52,6 +59,11 @@ func (client *Client) Loop() {
 	}
 }
 
+func (client *Client) sendMessage(msg *Dictionary) {
+	str, _ := json.Marshal(msg)
+	client.socket.WriteMessage(websocket.TextMessage, str)
+}
+
 func (client *Client) registerLogin() bool {
 	client.msgType = MessageType(NONE)
 	_, message, err := client.socket.ReadMessage()
@@ -62,12 +74,15 @@ func (client *Client) registerLogin() bool {
 	var credentials database.User
 	err = json.Unmarshal(message, &credentials)
 	if err != nil {
+		log.Printf("registerLogin: %s", err.Error())
 		return false
 	}
 
-	if credentials.UsernameTaken(client.manager.DB) {
+	id, err := credentials.RegisterLogin(client.manager.DB)
+	if err != nil {
+		client.sendMessage(&Dictionary{"error": err.Error()})
 		return true
 	}
-	credentials.CreateUser(client.manager.DB)
+	client.sendMessage(&Dictionary{"token": id})
 	return true
 }
