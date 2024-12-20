@@ -1,14 +1,13 @@
 package main
 
 import (
-	"server/srcs"
 	"server/srcs/database"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
-var manager = srcs.NewWebSocketManager()
+var manager = NewWebSocketManager()
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,

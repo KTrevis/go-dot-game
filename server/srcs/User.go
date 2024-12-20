@@ -1,4 +1,4 @@
-package database
+package main
 
 import (
 	"context"
@@ -26,9 +26,16 @@ func hashPassword(password *string) {
 	*password = string(bytes)
 }
 
-func (user *User) CreateUser(db *mongo.Database) {
+func (user *User) CreateUser(db *mongo.Database) string {
 	hashPassword(&user.Password)
-	db.Collection("users").InsertOne(context.TODO(), user)
+	res, _ := db.Collection("users").InsertOne(context.TODO(), user)
+	objectID, ok := res.InsertedID.(primitive.ObjectID)
+
+	if !ok {
+		return ""
+	}
+	id, _ := objectID.MarshalText()
+	return string(id)
 }
 
 func (user *User) passwordIsValid(found *User) bool {
@@ -36,12 +43,12 @@ func (user *User) passwordIsValid(found *User) bool {
 	return err == nil
 }
 
-func (user *User) RegisterLogin(db *mongo.Database) (string, error) {
+func (user *User) RegisterLogin(db *mongo.Database, client *Client) (string, error) {
 	var query = db.Collection("users").FindOne(context.TODO(), bson.M{"username": user.Username})
 
 	if query.Err() != nil {
 		user.CreateUser(db)
-		return "", fmt.Errorf("account created")
+		return "", nil
 	}
 
 	var found User
@@ -52,5 +59,6 @@ func (user *User) RegisterLogin(db *mongo.Database) (string, error) {
 	}
 
 	id, _ := found.ID.MarshalText()
+	client.user = user
 	return string(id), nil
 }

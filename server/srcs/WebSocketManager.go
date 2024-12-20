@@ -1,4 +1,4 @@
-package srcs
+package main
 
 import (
 	"sync"

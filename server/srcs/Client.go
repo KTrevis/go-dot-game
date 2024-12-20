@@ -1,9 +1,8 @@
-package srcs
+package main
 
 import (
 	"encoding/json"
 	"log"
-	"server/srcs/database"
 
 	"github.com/gorilla/websocket"
 )
@@ -27,7 +26,7 @@ func MessageTypeToString(msgType MessageType) string {
 }
 
 type Client struct {
-	user    *database.User
+	user    *User
 	msgType MessageType
 	socket  *websocket.Conn
 	manager *WebSocketManager
@@ -71,14 +70,16 @@ func (client *Client) registerLogin() bool {
 		return false
 	}
 
-	var credentials database.User
+	var credentials User
 	err = json.Unmarshal(message, &credentials)
+
 	if err != nil {
 		log.Printf("registerLogin: %s", err.Error())
 		return false
 	}
 
-	id, err := credentials.RegisterLogin(client.manager.DB)
+	id, err := credentials.RegisterLogin(client.manager.DB, client)
+
 	if err != nil {
 		client.sendMessage(&Dictionary{"error": err.Error()})
 		return true
