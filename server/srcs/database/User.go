@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -21,6 +20,5 @@ func (user *User) UsernameTaken(db *mongo.Database) bool {
 }
 
 func (user *User) CreateUser(db *mongo.Database) {
-	_, err := db.Collection("users").InsertOne(context.TODO(), user)
-	log.Println(err)
+	db.Collection("users").InsertOne(context.TODO(), user)
 }

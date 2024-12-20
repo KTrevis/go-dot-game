@@ -2,6 +2,7 @@ package srcs
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"server/srcs/database"
 
@@ -26,6 +27,7 @@ type Client struct {
 
 func (client *Client) Loop() {
 	for {
+		fmt.Println()
 		_, message, err := client.socket.ReadMessage()
 		if err != nil {
 			client.manager.RemoveClient(client.socket)

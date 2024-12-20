@@ -18,7 +18,7 @@ var upgrader = websocket.Upgrader{
 func createWebsocket(context *gin.Context) {
 	socket, _ := upgrader.Upgrade(context.Writer, context.Request, nil)
 	manager.AddClient(socket)
-	manager.Clients[socket].Loop()
+	go manager.Clients[socket].Loop()
 }
 
 func main() {
