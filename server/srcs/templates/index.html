@@ -1,0 +1,25 @@
+<style>
+form#register {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+form#register>* {
+	width: 10rem;
+}
+
+p {
+	text-align: center;
+}
+</style>
+<form id="register" method="post" action="/api/register">
+	<input type="text" placeholder="Username" name="username">
+	<input type="password" placeholder="Password" name="password">
+	<input type="password" placeholder="Confirm password" name="confirmPassword">
+	<button type="submit">Register</button>
+</form>
+<p>{{.msg}}</p>
+<script src="https://unpkg.com/htmx.org"></script>

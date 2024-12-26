@@ -1,13 +1,15 @@
 package main
 
 import (
+	"server/database"
 	"sync"
+
 	"github.com/gorilla/websocket"
 )
 
 type WebSocketManager struct {
 	Clients map[*websocket.Conn]*Client
-	db		*db
+	db		*database.DB
 	mutex   sync.Mutex
 }
 

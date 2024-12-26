@@ -1,6 +1,10 @@
 package main
 
 import (
+	"server/database"
+	"server/views"
+	"server/views/api"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
@@ -18,9 +22,18 @@ func createWebsocket(context *gin.Context) {
 	go manager.Clients[socket].Loop()
 }
 
-func main() {
-	manager.db = SetupDB()
-	router := gin.Default()
+func setupViews(router *gin.Engine, db *database.DB) {
+	router.GET("/", views.Index)
 	router.GET("/websocket", createWebsocket)
+	router.POST("/api/register", func(c *gin.Context) {
+		api.Register(c, db)
+	})
+	router.LoadHTMLGlob("./templates/*")
+}
+
+func main() {
+	manager.db = database.SetupDB()
+	router := gin.Default()
+	setupViews(router, manager.db)
 	router.Run(":80")
 }

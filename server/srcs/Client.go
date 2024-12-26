@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"server/database"
 
 	"github.com/gorilla/websocket"
 )
 
-type Dictionary map[string]interface{}
+type Dictionary map[string]any
 type MessageType int
 
 const (
@@ -26,7 +27,7 @@ func MessageTypeToString(msgType MessageType) string {
 }
 
 type Client struct {
-	user    *User
+	user    *database.User
 	msgType MessageType
 	socket  *websocket.Conn
 	logged	bool
@@ -67,10 +68,11 @@ func (this *Client) login() {
 	if err != nil {
 		log.Printf("client.login failed to read message: %s", err.Error())
 		this.sendMessage(&Dictionary{"error": err.Error()})
+		this.manager.RemoveClient(this.socket)
 		return
 	}
 
-	var credentials User
+	var credentials database.User
 	err = json.Unmarshal(message, &credentials)
 
 	if err != nil {
