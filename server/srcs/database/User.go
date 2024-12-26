@@ -4,13 +4,15 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"server/utils"
 	"strings"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-	Username string `database:"username"`
-	Password string `database:"password"`
+	Username 	string `database:"username"`
+	Password 	string `database:"password"`
 }
 
 func hashString(password *string) {
@@ -22,18 +24,31 @@ func hashString(password *string) {
 	*password = string(bytes)
 }
 
-func (this *User) passwordIsValid(found *User) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(found.Password), []byte(this.Password))
-	return err == nil
+// Returns nil if user password is valid.
+func (this *User) passwordIsValid(db *DB) error {
+	var hash string
+	err := db.QueryRow(context.Background(), "SELECT password FROM users WHERE username=$1;", this.Username).Scan(&hash)
+	
+	if err != nil {
+		return err
+	}
+
+	if bcrypt.CompareHashAndPassword([]byte(hash), []byte(this.Password)) != nil {
+		return fmt.Errorf("invalid password")
+	}
+
+	return nil
 }
 
 func (this *User) usernameTaken(c *context.Context, db *DB) bool {
-	res := db.QueryRow(*c, "SELECT username FROM users WHERE username=$1;", this.Username)
 	var found string
+
+	res := db.QueryRow(*c, "SELECT username FROM users WHERE username=$1;", this.Username)
 	err := res.Scan(&found)
 	return err == nil
 }
 
+// Returns nil if the user has been successfully added to the database.
 func (this *User) AddToDB(c *context.Context, db *DB) error {
 	const MINIMUM_LEN = 4
 
@@ -60,26 +75,25 @@ func (this *User) AddToDB(c *context.Context, db *DB) error {
 	}
 
 	this.Password = string(hash)
-	_, err = db.Exec(*c, "INSERT INTO users (username, password) VALUES ($1, $2);", this.Username, this.Password)
+	const query = "INSERT INTO users (username, password) VALUES ($1, $2);"
+	_, err = db.Exec(*c, query, this.Username, this.Password)
 
 	return err
 }
 
-// Returns a user if the instance that used this method has valid username and password.
-// Otherwise, returns nil and an error.
-// func (user *User) login(db *mongo.Database) (*User, error) {
-// 	var query = db.Collection("users").FindOne(context.TODO(), bson.M{"username": user.Username})
-//
-// 	if query.Err() != nil {
-// 		return nil, fmt.Errorf("%s no user found with this username", user.Username)
-// 	}
-//
-// 	var found User
-// 	query.Decode(&found)
-//
-// 	if !user.passwordIsValid(&found) {
-// 		return nil, fmt.Errorf("invalid password")
-// 	}
-//
-// 	return user, nil
-// }
+// Returns a random string to use as a session token if the user successfully logged in.
+// Returns an empty string and an error otherwise.
+func (this *User) Login(db *DB) (string, error) {
+	var hash string
+	err := db.QueryRow(context.Background(), "SELECT password FROM users WHERE username=$1;", this.Username).Scan(&hash)
+	
+	if err != nil {
+		return "", fmt.Errorf("user %s not found", this.Username)
+	}
+
+	if bcrypt.CompareHashAndPassword([]byte(hash), []byte(this.Password)) != nil {
+		return "", fmt.Errorf("invalid password")
+	}
+	this.Password = hash
+	return utils.RandStr(), nil
+}
