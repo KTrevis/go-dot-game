@@ -1,9 +1,9 @@
 FROM golang:latest
 
+COPY ./srcs /app
 WORKDIR /app
-COPY . .
 RUN go install github.com/air-verse/air@latest
-RUN go build
+# RUN go mod tidy
+# RUN go build
 
 CMD ["/go/bin/air"]
-# CMD ["tail", "-f"]

@@ -2,24 +2,30 @@ services:
   go:
     build: ./server
     container_name: server
+    env_file:
+      .env
     ports:
-      - 8080:8080
+      - 8080:80
     networks:
       - app-network
     volumes:
-      - ./server:/app
+      - ./server/srcs:/app
     restart: always
 
   postgres:
-    image: mongo
-    ports:
-      - 27017:27017
-    container_name: mongo
+    image: postgres:17
+    container_name: postgres
     volumes:
-      - ./data/db:/data/db
+      - ./data/postgres:/var/lib/postgresql/data
     networks:
       - app-network
+    env_file:
+      .env
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER"]
+      interval: 0.5s
+      retries: 10
 
 networks:
   app-network:

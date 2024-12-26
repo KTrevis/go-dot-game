@@ -22,5 +22,5 @@ func main() {
 	manager.db = SetupDB()
 	router := gin.Default()
 	router.GET("/websocket", createWebsocket)
-	router.Run(":8080")
+	router.Run(":80")
 }

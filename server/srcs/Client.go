@@ -12,15 +12,15 @@ type MessageType int
 
 const (
 	NONE MessageType = iota
-	REGISTER_LOGIN
+	LOGIN
 )
 
 func MessageTypeToString(msgType MessageType) string {
 	switch msgType {
 	case MessageType(NONE):
 		return "NONE"
-	case MessageType(REGISTER_LOGIN):
-		return "REGISTER_LOGIN"
+	case MessageType(LOGIN):
+		return "LOGIN"
 	}
 	return "UNKNOWN"
 }
@@ -29,61 +29,61 @@ type Client struct {
 	user    *User
 	msgType MessageType
 	socket  *websocket.Conn
+	logged	bool
 	manager *WebSocketManager
 }
 
-func (client *Client) Loop() {
+func (this *Client) Loop() {
 	for {
-		_, message, err := client.socket.ReadMessage()
+		_, message, err := this.socket.ReadMessage()
 		if err != nil {
-			client.manager.RemoveClient(client.socket)
-			return
+			log.Printf("client.Loop: failed to read message")
+			continue
 		}
 
-		if client.msgType == MessageType(NONE) {
-			err = json.Unmarshal(message, &client.msgType)
-			if err != nil {
-				continue
-			}
-			log.Printf("Received message of type %s from client %s", MessageTypeToString(client.msgType), client.user)
+		err = json.Unmarshal(message, &this.msgType)
+		if err != nil {
+			log.Printf("client.Loop: failed to parse message")
+			continue
 		}
+		log.Printf("Received message of type %s from client %s", MessageTypeToString(this.msgType), this.user)
 
-		switch client.msgType {
-		case REGISTER_LOGIN:
-			if !client.registerLogin() {
-				client.manager.RemoveClient(client.socket)
-				return
-			}
+		switch this.msgType {
+		case LOGIN:
+			this.login()
 		}
+		this.msgType = NONE
 	}
 }
 
-func (client *Client) sendMessage(msg *Dictionary) {
+func (this *Client) sendMessage(msg *Dictionary) {
 	str, _ := json.Marshal(msg)
-	client.socket.WriteMessage(websocket.TextMessage, str)
+	this.socket.WriteMessage(websocket.TextMessage, str)
 }
 
-func (client *Client) registerLogin() bool {
-	client.msgType = MessageType(NONE)
-	_, message, err := client.socket.ReadMessage()
+func (this *Client) login() {
+	_, message, err := this.socket.ReadMessage()
+
 	if err != nil {
-		return false
+		log.Printf("client.login failed to read message: %s", err.Error())
+		this.sendMessage(&Dictionary{"error": err.Error()})
+		return
 	}
 
 	var credentials User
 	err = json.Unmarshal(message, &credentials)
 
 	if err != nil {
-		log.Printf("registerLogin: %s", err.Error())
-		return false
+		log.Printf("client.login failed to parse json: %s", err.Error())
+		this.sendMessage(&Dictionary{"error": err.Error()})
+		return
 	}
 
-	id, err := credentials.RegisterLogin(client.manager.db, client)
-
+	// TODO: check login here
 	if err != nil {
-		client.sendMessage(&Dictionary{"error": err.Error()})
-		return true
+		log.Printf("client.login failed to login: %s", err.Error())
+		this.sendMessage(&Dictionary{"error": err.Error()})
+		return
 	}
-	client.sendMessage(&Dictionary{"token": id})
-	return true
+	this.logged = true
 }

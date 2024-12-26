@@ -2,14 +2,12 @@ package main
 
 import (
 	"sync"
-
 	"github.com/gorilla/websocket"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type WebSocketManager struct {
 	Clients map[*websocket.Conn]*Client
-	db      *mongo.Database
+	db		*db
 	mutex   sync.Mutex
 }
 

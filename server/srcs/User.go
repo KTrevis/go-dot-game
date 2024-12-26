@@ -1,41 +1,23 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"log"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty"`
-	Username string             `bson:"username"`
-	Password string             `bson:"password"`
+	Username string
+	Password string
 }
 
-func hashPassword(password *string) {
+func hashString(password *string) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(*password), 14)
 	if err != nil {
-		log.Printf("failed to hash password")
+		log.Printf("hashString: failed")
 		return
 	}
 	*password = string(bytes)
-}
-
-func (user *User) CreateUser(db *mongo.Database) string {
-	hashPassword(&user.Password)
-	res, _ := db.Collection("users").InsertOne(context.TODO(), user)
-	objectID, ok := res.InsertedID.(primitive.ObjectID)
-
-	if !ok {
-		return ""
-	}
-	id, _ := objectID.MarshalText()
-	return string(id)
 }
 
 func (user *User) passwordIsValid(found *User) bool {
@@ -43,22 +25,21 @@ func (user *User) passwordIsValid(found *User) bool {
 	return err == nil
 }
 
-func (user *User) RegisterLogin(db *mongo.Database, client *Client) (string, error) {
-	var query = db.Collection("users").FindOne(context.TODO(), bson.M{"username": user.Username})
-
-	if query.Err() != nil {
-		user.CreateUser(db)
-		return "", nil
-	}
-
-	var found User
-	query.Decode(&found)
-
-	if !user.passwordIsValid(&found) {
-		return "", fmt.Errorf("invalid password")
-	}
-
-	id, _ := found.ID.MarshalText()
-	client.user = user
-	return string(id), nil
-}
+// Returns a user if the instance that used this method has valid username and password.
+// Otherwise, returns nil and an error.
+// func (user *User) login(db *mongo.Database) (*User, error) {
+// 	var query = db.Collection("users").FindOne(context.TODO(), bson.M{"username": user.Username})
+//
+// 	if query.Err() != nil {
+// 		return nil, fmt.Errorf("%s no user found with this username", user.Username)
+// 	}
+//
+// 	var found User
+// 	query.Decode(&found)
+//
+// 	if !user.passwordIsValid(&found) {
+// 		return nil, fmt.Errorf("invalid password")
+// 	}
+//
+// 	return user, nil
+// }
