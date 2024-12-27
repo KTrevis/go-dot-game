@@ -76,6 +76,6 @@ func (this *User) Login(db *DB) error {
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(this.Password)) != nil {
 		return fmt.Errorf("invalid password")
 	}
-	this = &user
+	*this = user
 	return nil
 }

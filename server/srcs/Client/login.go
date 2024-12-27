@@ -42,7 +42,7 @@ func (this *Client) login() error {
 	}
 
 	if this.manager.UserIsOnline(&credentials) {
-		this.sendMessage(&Dictionary{"error": "this account is logged in somewhere else"})
+		this.sendMessage(&Dictionary{"error": "this account is logged in elsewhere"})
 		return fmt.Errorf("credentials.Login: user %s session already active", credentials.Username)
 	}
 

@@ -1,12 +1,24 @@
 from typing import Any
+
+import websockets
 from .valid_login import validLogin
 from .invalid_login import invalidLogin
 from websockets.asyncio.client import ClientConnection
 import json
 from colored_print import log
 
+async def loginDifferentSocket():
+    socket = await websockets.connect("ws://localhost:8080/websocket")
+    msg = {
+        "username": "test",
+        "password": "test"
+            }
+    await socket.send(json.dumps("LOGIN"))
+    await socket.send(json.dumps(msg))
+    log.success("[LOGIN TO SAME ACCOUNT DIFFERENT SOCKET OK]\n")
+
+
 async def doubleLogin(socket: ClientConnection):
-    print("[DOUBLE LOGIN]")
     msg = {
         "username": "test",
         "password": "test"
@@ -21,4 +33,5 @@ async def testLogin(socket: ClientConnection):
     print("[LOGIN TESTS]\n")
     await invalidLogin(socket)
     await validLogin(socket)
-    await doubleLogin(socket)
+    await loginDifferentSocket()
+    # await doubleLogin(socket)

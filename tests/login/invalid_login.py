@@ -4,7 +4,6 @@ from websockets.asyncio.client import ClientConnection
 from colored_print import log
 
 async def invalidPassword(socket: ClientConnection):
-    print("[INVALID PASSWORD]")
     message = {
             "username": "test",
             "password": "sqdfllkj"
@@ -18,7 +17,6 @@ async def invalidPassword(socket: ClientConnection):
     log.success("[INVALID PASSWORD OK]\n")
 
 async def invalidUsername(socket: ClientConnection):
-    print("[INVALID USERNAME]")
     message = {
             "username": "sqdfkhq",
             "password": "test"

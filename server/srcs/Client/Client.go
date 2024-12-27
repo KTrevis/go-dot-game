@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"server/database"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -23,6 +24,8 @@ func (this *Client) disconnect() {
 
 func (this *Client) treatMessage() {
 	var err error
+	const msg = "Received message of type %s from client %s"
+	log.Printf(msg, this.msgType, this.user.Username)
 
 	switch this.msgType {
 	case "LOGIN":
@@ -36,9 +39,6 @@ func (this *Client) treatMessage() {
 		this.disconnect()
 		return
 	}
-
-	const msg = "Received message of type %s from client %s"
-	log.Printf(msg, this.msgType, this.user.Username)
 
 	if err != nil {
 		log.Printf("Client.treatMessage: %s", err.Error())

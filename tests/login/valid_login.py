@@ -4,7 +4,6 @@ from websockets.asyncio.client import ClientConnection
 from colored_print import log
 
 async def validLogin(socket: ClientConnection):
-    print("[VALID LOGIN]")
     message = {
             "username": "test",
             "password": "test"
