@@ -1,6 +1,7 @@
 import json
 from typing import Any
 from websockets.asyncio.client import ClientConnection
+from colored_print import log
 
 async def invalidPassword(socket: ClientConnection):
     print("[INVALID PASSWORD]")
@@ -14,6 +15,7 @@ async def invalidPassword(socket: ClientConnection):
     data: dict[str, Any] = json.loads(await socket.recv())
 
     assert "error" in data
+    log.success("[INVALID PASSWORD OK]")
 
 async def invalidUsername(socket: ClientConnection):
     print("[INVALID USERNAME]")
@@ -27,6 +29,7 @@ async def invalidUsername(socket: ClientConnection):
     data: dict[str, Any] = json.loads(await socket.recv())
 
     assert "error" in data
+    log.success("[INVALID USERNAME OK]")
 
 async def invalidLogin(socket: ClientConnection):
     await invalidPassword(socket)

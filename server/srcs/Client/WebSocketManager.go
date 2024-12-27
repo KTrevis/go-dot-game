@@ -44,8 +44,11 @@ func (this *WebSocketManager) removeOnlineUser(socket *websocket.Conn) {
 
 func (this *WebSocketManager) RemoveClient(socket *websocket.Conn) {
 	this.mutex.Lock()
-	client := this.Clients[socket]
+	client, ok := this.Clients[socket]
 
+	if !ok {
+		return
+	}
 	log.Printf("client %s disconnected", client.user.Username)
 
 	this.removeOnlineUser(socket)
