@@ -10,11 +10,11 @@ import (
 )
 
 type Client struct {
-	user	database.User
-	msgType string
-	socket  *websocket.Conn
-	manager *WebSocketManager
-	token	string
+	user			database.User
+	msgType 		string
+	socket  		*websocket.Conn
+	manager 		*WebSocketManager
+	authenticated	bool
 }
 
 type Dictionary map[string]any

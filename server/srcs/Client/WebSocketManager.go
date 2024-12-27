@@ -29,6 +29,7 @@ func (this *WebSocketManager) AddClient(socket *websocket.Conn) {
 	this.Clients[socket] = &Client{
 		manager: this,
 		socket:  socket,
+		authenticated: false,
 	}
 }
 

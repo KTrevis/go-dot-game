@@ -81,19 +81,17 @@ func (this *User) AddToDB(c *context.Context, db *DB) error {
 	return err
 }
 
-// Returns a random string to use as a session token if the user successfully logged in.
-// Returns an empty string and an error otherwise.
-func (this *User) Login(db *DB) (string, error) {
+func (this *User) Login(db *DB) error {
 	var hash string
 	err := db.QueryRow(context.Background(), "SELECT password FROM users WHERE username=$1;", this.Username).Scan(&hash)
 	
 	if err != nil {
-		return "", fmt.Errorf("user %s not found", this.Username)
+		return fmt.Errorf("user %s not found", this.Username)
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(hash), []byte(this.Password)) != nil {
-		return "", fmt.Errorf("invalid password")
+		return fmt.Errorf("invalid password")
 	}
 	this.Password = hash
-	return utils.RandStr(), nil
+	return nil
 }

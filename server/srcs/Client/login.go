@@ -15,10 +15,10 @@ func (this *Client) login() {
 		return
 	}
 
-	if this.token != "" {
-		const msg = "client %s tried to log in while already logged in"
+	if  this.authenticated {
+		const msg = "client %s tried to log in while already authenticated"
 		log.Printf(msg, this.user.Username)
-		this.sendMessage(&Dictionary{"error": "you are already logged in"})
+		this.sendMessage(&Dictionary{"error": "you are already authenticated"})
 		return
 	}
 
@@ -31,7 +31,7 @@ func (this *Client) login() {
 		return
 	}
 
-	this.token, err = credentials.Login(this.manager.DB)
+	err = credentials.Login(this.manager.DB)
 
 	if err != nil {
 		log.Printf("credentials.Login failed: %s", err.Error())
@@ -40,7 +40,8 @@ func (this *Client) login() {
 	}
 
 	this.user = credentials
+	this.authenticated = true
 	log.Printf("Client authenticated: %s", this.user.Username)
-	this.sendMessage(&Dictionary{"token": this.token})
+	this.sendMessage(&Dictionary{"authenticated": true})
 	this.manager.AddOnlineUser(&this.user)
 }
