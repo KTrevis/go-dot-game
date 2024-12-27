@@ -2,6 +2,7 @@ package client
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"server/database"
 
@@ -9,7 +10,7 @@ import (
 )
 
 type Client struct {
-	user	*database.User
+	user	database.User
 	msgType string
 	socket  *websocket.Conn
 	manager *WebSocketManager
@@ -18,71 +19,52 @@ type Client struct {
 
 type Dictionary map[string]any
 
+func (this *Client) disconnect() {
+	this.manager.RemoveClient(this.socket)
+}
+
+func (this *Client) treatMessage() error {
+	switch this.msgType {
+	case "LOGIN":
+		this.login()
+
+	case "GET_CLASSES":
+
+	default:
+		const msg = "Unknown message type, disconnecting client %s"
+		this.disconnect()
+		return fmt.Errorf("unknown message type")
+	}
+	const msg = "Received message of type %s from client %s"
+	log.Printf(msg, this.msgType, this.user.Username)
+	return nil
+}
 
 func (this *Client) Loop() {
+	log.Printf("Client.Loop: new websocket connected")
 	for {
 		_, message, err := this.socket.ReadMessage()
 		if err != nil {
-			this.manager.RemoveClient(this.socket)
-			log.Printf("client %s disconnected", this.user.Username)
+			this.disconnect()
 			return
 		}
 
 		err = json.Unmarshal(message, &this.msgType)
-		if err != nil {
-			log.Printf("client.Loop failed to parse message: %s", message)
-			continue
-		}
-		log.Printf("Received message of type %s from client %v", this.msgType, this.user)
 
-		switch this.msgType {
-		case "LOGIN":
-			this.login()
-		default:
-			log.Printf("Received unknown message type, disconnecting client")
+		if err != nil {
+			const msg = "client.Loop failed to unmarshal message: %s"
+			log.Printf(msg, message)
+			this.disconnect()
+			return
 		}
-		this.msgType = ""
+		
+		if this.treatMessage() != nil {
+			return
+		}
 	}
 }
 
 func (this *Client) sendMessage(msg *Dictionary) {
 	str, _ := json.Marshal(msg)
 	this.socket.WriteMessage(websocket.TextMessage, str)
-}
-
-func (this *Client) login() {
-	_, message, err := this.socket.ReadMessage()
-
-	if err != nil {
-		log.Printf("client disconnected %v", this.user.Username)
-		this.manager.RemoveClient(this.socket)
-		return
-	}
-
-	if this.token != "" {
-		this.sendMessage(&Dictionary{"error": "you are already logged in"})
-		return
-	}
-
-	var credentials database.User
-	err = json.Unmarshal(message, &credentials)
-
-	if err != nil {
-		log.Printf("client.login failed to parse message: %s", message)
-		this.sendMessage(&Dictionary{"error": err.Error()})
-		return
-	}
-
-	this.token, err = credentials.Login(this.manager.DB)
-
-	if err != nil {
-		log.Printf("client.login failed: %s", err.Error())
-		this.sendMessage(&Dictionary{"error": err.Error()})
-		return
-	}
-
-	this.user = &credentials
-	log.Printf("client.log success: %s", this.user.Username)
-	this.sendMessage(&Dictionary{"token": this.token})
-	this.manager.AddOnlineUser(this.user)
 }

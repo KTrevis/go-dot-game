@@ -1,8 +1,10 @@
 package client
 
 import (
+	"log"
 	"server/database"
 	"sync"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -30,18 +32,25 @@ func (this *WebSocketManager) AddClient(socket *websocket.Conn) {
 	}
 }
 
-func (this *WebSocketManager) RemoveClient(socket *websocket.Conn) {
-	this.mutex.Lock()
-	defer this.mutex.Unlock()
-
-	user := this.Clients[socket].user
+func (this *WebSocketManager) removeOnlineUser(socket *websocket.Conn) {
+	user := &this.Clients[socket].user
 	_, ok := this.OnlineUsers[user]
 
 	if ok {
 		delete(this.OnlineUsers, user)
 	}
+}
+
+func (this *WebSocketManager) RemoveClient(socket *websocket.Conn) {
+	this.mutex.Lock()
+	client := this.Clients[socket]
+
+	log.Printf("client %s disconnected", client.user.Username)
+
+	this.removeOnlineUser(socket)
 	delete(this.Clients, socket)
 	socket.Close()
+	this.mutex.Unlock()
 }
 
 func (this *WebSocketManager) AddOnlineUser(user *database.User) {
@@ -49,11 +58,4 @@ func (this *WebSocketManager) AddOnlineUser(user *database.User) {
 	defer this.mutex.Unlock()
 
 	this.OnlineUsers[user] = true
-}
-
-func (this *WebSocketManager) RemoveOnlineUser(user *database.User) {
-	this.mutex.Lock()
-	defer this.mutex.Unlock()
-
-	delete(this.OnlineUsers, user)
 }
