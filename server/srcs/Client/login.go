@@ -2,46 +2,49 @@ package client
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"server/database"
 )
 
-func (this *Client) login() {
+func (this *Client) login() error {
 	_, message, err := this.socket.ReadMessage()
 
 	if err != nil {
-		log.Printf("client disconnected: %v", this.user.Username)
-		this.disconnect()
-		return
+		log.Println("Client.login: %s", err.Error())
+		return err
 	}
 
 	if  this.authenticated {
-		const msg = "client %s tried to log in while already authenticated"
-		log.Printf(msg, this.user.Username)
+		msg := fmt.Sprintf("client %s tried to log in while already authenticated", this.user.Username)
+		log.Println(msg)
 		this.sendMessage(&Dictionary{"error": "you are already authenticated"})
-		return
+		return fmt.Errorf(msg)
 	}
 
 	var credentials database.User
 	err = json.Unmarshal(message, &credentials)
 
 	if err != nil {
-		log.Printf("client.login failed to unmarshal message: %s", message)
+		msg := fmt.Sprintf("client.login failed to unmarshal message: %s", message)
+		log.Println(msg)
 		this.sendMessage(&Dictionary{"error": err.Error()})
-		return
+		return fmt.Errorf(msg)
 	}
 
 	err = credentials.Login(this.manager.DB)
 
 	if err != nil {
-		log.Printf("credentials.Login failed: %s", err.Error())
+		msg := fmt.Sprintf("credentials.Login failed: %s", err.Error())
+		log.Println(msg)
 		this.sendMessage(&Dictionary{"error": err.Error()})
-		return
+		return fmt.Errorf(msg)
 	}
 
 	this.user = credentials
 	this.authenticated = true
-	log.Printf("Client authenticated: %s", this.user.Username)
 	this.sendMessage(&Dictionary{"authenticated": true})
 	this.manager.AddOnlineUser(&this.user)
+	log.Printf("Client authenticated: %s", this.user.Username)
+	return nil
 }
