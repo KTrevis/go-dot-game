@@ -44,6 +44,7 @@ func (this *WebSocketManager) removeOnlineUser(socket *websocket.Conn) {
 
 func (this *WebSocketManager) RemoveClient(socket *websocket.Conn) {
 	this.mutex.Lock()
+	defer this.mutex.Unlock()
 	client, ok := this.Clients[socket]
 
 	if !ok {
@@ -54,7 +55,6 @@ func (this *WebSocketManager) RemoveClient(socket *websocket.Conn) {
 	this.removeOnlineUser(socket)
 	delete(this.Clients, socket)
 	socket.Close()
-	this.mutex.Unlock()
 }
 
 func (this *WebSocketManager) UserIsOnline(user *database.User) bool {

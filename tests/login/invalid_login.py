@@ -15,7 +15,7 @@ async def invalidPassword(socket: ClientConnection):
     data: dict[str, Any] = json.loads(await socket.recv())
 
     assert "error" in data
-    log.success("[INVALID PASSWORD OK]")
+    log.success("[INVALID PASSWORD OK]\n")
 
 async def invalidUsername(socket: ClientConnection):
     print("[INVALID USERNAME]")
@@ -29,7 +29,7 @@ async def invalidUsername(socket: ClientConnection):
     data: dict[str, Any] = json.loads(await socket.recv())
 
     assert "error" in data
-    log.success("[INVALID USERNAME OK]")
+    log.success("[INVALID USERNAME OK]\n")
 
 async def invalidLogin(socket: ClientConnection):
     await invalidPassword(socket)

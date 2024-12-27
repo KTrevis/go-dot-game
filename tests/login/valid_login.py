@@ -15,4 +15,4 @@ async def validLogin(socket: ClientConnection):
     data: dict[str, Any] = json.loads(await socket.recv())
     assert "authenticated" in data
     assert data["authenticated"] == True
-    log.success("[VALID LOGIN OK]")
+    log.success("[VALID LOGIN OK]\n")

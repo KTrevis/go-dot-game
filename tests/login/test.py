@@ -3,8 +3,10 @@ from .valid_login import validLogin
 from .invalid_login import invalidLogin
 from websockets.asyncio.client import ClientConnection
 import json
+from colored_print import log
 
 async def doubleLogin(socket: ClientConnection):
+    print("[DOUBLE LOGIN]")
     msg = {
         "username": "test",
         "password": "test"
@@ -13,7 +15,7 @@ async def doubleLogin(socket: ClientConnection):
     await socket.send(json.dumps(msg))
 
     data: dict[str, Any] = json.loads(await socket.recv())
-    print(data)
+    log.success("[DOUBLE LOGIN OK]\n")
 
 async def testLogin(socket: ClientConnection):
     print("[LOGIN TESTS]\n")
