@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"server/utils"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-	Username 	string `database:"username"`
-	Password 	string `database:"password"`
+	Username 	string	`db:"username"`
+	Password 	string 	`db:"password"`
+	ID			int		`db:"id"`
 }
 
 func hashString(password *string) {
@@ -22,22 +22,6 @@ func hashString(password *string) {
 		return
 	}
 	*password = string(bytes)
-}
-
-// Returns nil if user password is valid.
-func (this *User) passwordIsValid(db *DB) error {
-	var hash string
-	err := db.QueryRow(context.Background(), "SELECT password FROM users WHERE username=$1;", this.Username).Scan(&hash)
-	
-	if err != nil {
-		return err
-	}
-
-	if bcrypt.CompareHashAndPassword([]byte(hash), []byte(this.Password)) != nil {
-		return fmt.Errorf("invalid password")
-	}
-
-	return nil
 }
 
 func (this *User) usernameTaken(c *context.Context, db *DB) bool {
@@ -82,16 +66,16 @@ func (this *User) AddToDB(c *context.Context, db *DB) error {
 }
 
 func (this *User) Login(db *DB) error {
-	var hash string
-	err := db.QueryRow(context.Background(), "SELECT password FROM users WHERE username=$1;", this.Username).Scan(&hash)
+	var user User
+	err := db.QueryRow(context.Background(), "SELECT (username, password, id) FROM users WHERE username=$1;", this.Username).Scan(&user)
 	
 	if err != nil {
 		return fmt.Errorf("user %s not found", this.Username)
 	}
 
-	if bcrypt.CompareHashAndPassword([]byte(hash), []byte(this.Password)) != nil {
+	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(this.Password)) != nil {
 		return fmt.Errorf("invalid password")
 	}
-	this.Password = hash
+	this = &user
 	return nil
 }

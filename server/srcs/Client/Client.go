@@ -2,10 +2,8 @@ package client
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"server/database"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -23,7 +21,7 @@ func (this *Client) disconnect() {
 	this.manager.RemoveClient(this.socket)
 }
 
-func (this *Client) treatMessage() error {
+func (this *Client) treatMessage() {
 	var err error
 
 	switch this.msgType {
@@ -34,16 +32,28 @@ func (this *Client) treatMessage() error {
 
 	default:
 		const msg = "Unknown message type, disconnecting client %s"
-		err = fmt.Errorf("unknown message type")
-	}
-
-	if err != nil {
-		log.Printf("Client.treatMessage: %s", err.Error())
-		return err
+		log.Printf(msg, this.user.Username)
+		this.disconnect()
+		return
 	}
 
 	const msg = "Received message of type %s from client %s"
 	log.Printf(msg, this.msgType, this.user.Username)
+
+	if err != nil {
+		log.Printf("Client.treatMessage: %s", err.Error())
+	}
+}
+
+func (this *Client) setMessageType(message []byte) error {
+	err := json.Unmarshal(message, &this.msgType)
+
+	if err != nil {
+		const msg = "client.setMessage failed to unmarshal message: %s"
+		log.Printf(msg, message)
+		this.disconnect()
+		return err
+	}
 	return nil
 }
 
@@ -57,19 +67,12 @@ func (this *Client) Loop() {
 			return
 		}
 
-		err = json.Unmarshal(message, &this.msgType)
+		if this.setMessageType(message) != nil {
+			this.disconnect()
+			return
+		}
 
-		if err != nil {
-			const msg = "client.Loop failed to unmarshal message: %s"
-			log.Printf(msg, message)
-			this.disconnect()
-			return
-		}
-		
-		if this.treatMessage() != nil {
-			this.disconnect()
-			return
-		}
+		this.treatMessage()
 	}
 }
 

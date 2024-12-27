@@ -1,7 +1,9 @@
 package api
 
 import (
+	"log"
 	"server/database"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -37,5 +39,6 @@ func Register(c *gin.Context, db *database.DB) {
 		return
 	}
 
+	log.Printf("account %s created", user.Username)
 	c.HTML(200, "index.html", gin.H{"msg": "account created"})
 }

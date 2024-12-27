@@ -10,7 +10,7 @@ import (
 
 type WebSocketManager struct {
 	Clients map[*websocket.Conn]*Client
-	OnlineUsers map[*database.User]bool
+	onlineUsers map[int]bool
 	DB		*database.DB
 	mutex   sync.Mutex
 }
@@ -18,7 +18,7 @@ type WebSocketManager struct {
 func NewWebSocketManager() *WebSocketManager {
 	return &WebSocketManager{
 		Clients: make(map[*websocket.Conn]*Client),
-		OnlineUsers: make(map[*database.User]bool),
+		onlineUsers: make(map[int]bool),
 	}
 }
 
@@ -35,10 +35,10 @@ func (this *WebSocketManager) AddClient(socket *websocket.Conn) {
 
 func (this *WebSocketManager) removeOnlineUser(socket *websocket.Conn) {
 	user := &this.Clients[socket].user
-	_, ok := this.OnlineUsers[user]
+	_, ok := this.onlineUsers[user.ID]
 
 	if ok {
-		delete(this.OnlineUsers, user)
+		delete(this.onlineUsers, user.ID)
 	}
 }
 
@@ -54,9 +54,14 @@ func (this *WebSocketManager) RemoveClient(socket *websocket.Conn) {
 	this.mutex.Unlock()
 }
 
+func (this *WebSocketManager) UserIsOnline(user *database.User) bool {
+	_, ok := this.onlineUsers[user.ID]
+	return ok
+}
+
 func (this *WebSocketManager) AddOnlineUser(user *database.User) {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
 
-	this.OnlineUsers[user] = true
+	this.onlineUsers[user.ID] = true
 }

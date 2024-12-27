@@ -4,6 +4,9 @@ all:
 	make build
 	make up
 
+test:
+	python -m tests.main
+
 build:
 	docker compose build
 
