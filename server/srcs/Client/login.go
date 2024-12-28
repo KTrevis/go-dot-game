@@ -17,7 +17,7 @@ func (this *Client) login() error {
 	}
 
 	if  this.authenticated {
-		msg := fmt.Sprintf("client %s tried to log in while already authenticated %s", this.user.Username, this.socket.RemoteAddr())
+		msg := fmt.Sprintf("%s client %s tried to log in while already authenticated", this.socket.RemoteAddr(), this.user.Username)
 		this.sendMessage(&Dictionary{"error": "you are already authenticated"})
 		return errors.New(msg)
 	}

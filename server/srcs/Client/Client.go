@@ -24,8 +24,8 @@ func (this *Client) disconnect() {
 
 func (this *Client) treatMessage() {
 	var err error
-	const msg = "Received message type %s from client %s %s"
-	log.Printf(msg, this.msgType, this.user.Username, this.socket.RemoteAddr())
+	const msg = "%s Received message type %s from client %s"
+	log.Printf(msg, this.socket.RemoteAddr(), this.msgType, this.user.Username)
 
 	switch this.msgType {
 	case "LOGIN":
@@ -34,8 +34,8 @@ func (this *Client) treatMessage() {
 	case "GET_CLASSES":
 
 	default:
-		const msg = "Unknown message type %s, disconnecting client %s %s"
-		log.Printf(msg, this.msgType, this.user.Username, this.socket.RemoteAddr())
+		const msg = "%s Unknown message type %s, disconnecting client %s"
+		log.Printf(msg, this.socket.RemoteAddr(), this.msgType, this.user.Username)
 		this.disconnect()
 		return
 	}
