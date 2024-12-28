@@ -41,7 +41,6 @@ func (this *Client) treatMessage() {
 	var err error
 	const msg = "%s received message type %s"
 	log.Printf(msg, this.getFormattedIP(), this.msgType)
-	defer log.Printf("%s disconnected", this.getFormattedIP())
 
 	switch this.msgType {
 	case "LOGIN":
@@ -84,7 +83,8 @@ func (this *Client) setMessageType(message []byte) error {
 }
 
 func (this *Client) Loop() {
-	log.Printf("%s Client.Loop: new websocket connected", this.getFormattedIP())
+	log.Printf("%s connected", this.getFormattedIP())
+	defer log.Printf("%s disconnected", this.getFormattedIP())
 	for {
 		_, message, err := this.socket.ReadMessage()
 

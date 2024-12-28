@@ -1,8 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
+	"runtime"
 	"server/Client"
 	"server/database"
 	"server/views"
@@ -24,7 +25,7 @@ var upgrader = websocket.Upgrader{
 func createWebsocket(context *gin.Context, manager *client.WebSocketManager) {
 	socket, err := upgrader.Upgrade(context.Writer, context.Request, nil)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
+		log.Printf("createdWebsocket failed: %s", err.Error())
 		return
 	}
 	manager.AddClient(socket)
