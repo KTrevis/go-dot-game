@@ -8,8 +8,6 @@ import (
 	"server/classes"
 	"server/database"
 	"strings"
-	"time"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -66,21 +64,20 @@ func (this *Client) treatMessage() {
 func (this *Client) setMessageType(message []byte) error {
 	split := strings.Split(string(message), "\r\n")
 
-	if len(split) < 2 {
-		const msg = "%s client.setMessage missing header in request"
+	if len(split) != 2 {
+		const msg = "%s Client.setMessage missing header in request"
 		log.Printf(msg, this.getFormattedClientIP())
 		return errors.New(msg)
 	}
 
 	this.msgType = split[0]
-	this.body = split[len(split) - 1]
+	this.body = split[1]
 	return nil
 }
 
 func (this *Client) Loop() {
 	log.Printf("%s Client.Loop: new websocket connected", this.getFormattedClientIP())
 	for {
-		time.Sleep(100 * time.Millisecond)
 		_, message, err := this.socket.ReadMessage()
 
 		if err != nil {
