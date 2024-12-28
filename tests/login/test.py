@@ -1,6 +1,7 @@
 import asyncio
 from typing import Any
 import websockets
+from tests.ddos.test import testDDOS
 from tests.utils import sendMessage
 from .valid_login import validLogin
 from .invalid_login import invalidLogin

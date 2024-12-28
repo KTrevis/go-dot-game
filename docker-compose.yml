@@ -10,6 +10,7 @@ services:
       - app-network
     volumes:
       - ./server/srcs:/app
+      - ./data/go:/go/pkg
     restart: always
 
   postgres:

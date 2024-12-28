@@ -25,7 +25,13 @@ func (this *Client) login() error {
 		return errors.New(msg)
 	}
 
-	err = credentials.Login(this.manager.DB)
+	// if this.manager.UserIsOnline(&credentials) {
+	// 	this.sendMessage(&Dictionary{"error": "this account is already logged in"})
+	// 	const msg = "credentials.Login: tried to login to already active session %s"
+	// 	return fmt.Errorf(msg, credentials.Username)
+	// }
+
+	err = credentials.Login(this.manager.DB, this.manager.onlineUsers)
 
 	if err != nil {
 		msg := fmt.Sprintf("credentials.Login: %s", err.Error())
@@ -33,16 +39,10 @@ func (this *Client) login() error {
 		return errors.New(msg)
 	}
 
-	if this.manager.UserIsOnline(&credentials) {
-		this.sendMessage(&Dictionary{"error": "this account is already logged in"})
-		const msg = "credentials.Login: tried to log in to already active session %s"
-		return fmt.Errorf(msg, credentials.Username)
-	}
-
 	this.user = credentials
 	this.authenticated = true
 	this.sendMessage(&Dictionary{"authenticated": true})
 	this.manager.AddOnlineUser(&this.user)
-	log.Printf("%s client authenticated", this.getFormattedClientIP())
+	log.Printf("%s authenticated", this.getFormattedClientIP())
 	return nil
 }

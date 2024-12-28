@@ -40,8 +40,10 @@ func createUserTable(db *DB) {
 }
 
 func SetupDB() *DB {
-	var url = fmt.Sprintf("postgres://%s:%s@postgres:5432/postgres",
-		os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"))
+	user := os.Getenv("POSTGRES_USER")
+	password := os.Getenv("POSTGRES_PASSWORD")
+
+	var url = fmt.Sprintf("postgres://%s:%s@postgres:5432/postgres", user, password)
 	db, err := pgxpool.New(context.Background(), url)
 
 	if err != nil {

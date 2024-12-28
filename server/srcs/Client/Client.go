@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"server/classes"
 	"server/database"
 	"strings"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -46,6 +48,9 @@ func (this *Client) treatMessage() {
 	case "LOGIN":
 		err = this.login()
 
+	case "GET_CLASSES":
+		this.sendMessage(&Dictionary{"classes": classes.GetClassesName()})
+
 	default:
 		const msg = "%s unknown message type %s, disconnecting client"
 		log.Printf(msg, this.getFormattedClientIP(), this.msgType)
@@ -75,6 +80,7 @@ func (this *Client) setMessageType(message []byte) error {
 func (this *Client) Loop() {
 	log.Printf("%s Client.Loop: new websocket connected", this.getFormattedClientIP())
 	for {
+		time.Sleep(100 * time.Millisecond)
 		_, message, err := this.socket.ReadMessage()
 
 		if err != nil {

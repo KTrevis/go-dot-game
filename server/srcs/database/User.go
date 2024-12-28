@@ -2,8 +2,8 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
@@ -13,15 +13,6 @@ type User struct {
 	Username 	string	`db:"username"`
 	Password 	string 	`db:"password"`
 	ID			int		`db:"id"`
-}
-
-func hashString(password *string) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(*password), 14)
-	if err != nil {
-		log.Printf("hashString: failed")
-		return
-	}
-	*password = string(bytes)
 }
 
 func (this *User) usernameTaken(c *context.Context, db *DB) bool {
@@ -52,7 +43,7 @@ func (this *User) AddToDB(c *context.Context, db *DB) error {
 		return fmt.Errorf("username already taken")
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(this.Password), 14)
+	hash, err := bcrypt.GenerateFromPassword([]byte(this.Password), 10)
 
 	if err != nil {
 		return fmt.Errorf("failed to hash password")
@@ -65,12 +56,16 @@ func (this *User) AddToDB(c *context.Context, db *DB) error {
 	return err
 }
 
-func (this *User) Login(db *DB) error {
+func (this *User) Login(db *DB, onlineUsers map[int]bool) error {
 	var user User
 	err := db.QueryRow(context.Background(), "SELECT (username, password, id) FROM users WHERE username=$1;", this.Username).Scan(&user)
 	
 	if err != nil {
 		return fmt.Errorf("user %s not found", this.Username)
+	}
+
+	if _, ok := onlineUsers[user.ID]; ok {
+		return errors.New("this account is already logged in")
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(this.Password)) != nil {
