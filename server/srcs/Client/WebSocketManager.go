@@ -51,7 +51,7 @@ func (this *WebSocketManager) RemoveClient(socket *websocket.Conn) {
 	if !ok {
 		return
 	}
-	log.Printf("client %s disconnected %s", client.user.Username, client.socket.RemoteAddr())
+	log.Printf("%s disconnected", client.getFormattedClientIP())
 
 	this.removeOnlineUser(socket)
 	delete(this.Clients, socket)

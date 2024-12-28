@@ -24,8 +24,7 @@ async def invalidType():
 
 async def invalidData():
     socket = await websockets.connect("ws://localhost:8080/websocket")
-    await socket.send(json.dumps("LOGIN"))
-    await socket.send("qlkjsdf")
+    await sendMessage(socket, "LOGIN", "lkjqsdfqs")
 
     data: dict[str, Any] = json.loads(await socket.recv())
 

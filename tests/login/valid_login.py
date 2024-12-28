@@ -10,7 +10,7 @@ async def validLogin(socket: ClientConnection):
             "username": "test",
             "password": "test"
             }
-    sendMessage(socket, "LOGIN", message)
+    await sendMessage(socket, "LOGIN", message)
 
     data: dict[str, Any] = json.loads(await socket.recv())
     assert "authenticated" in data

@@ -9,24 +9,17 @@ import (
 )
 
 func (this *Client) login() error {
-	_, message, err := this.socket.ReadMessage()
-
-	if err != nil {
-		log.Printf("Client.login: %s", err.Error())
-		return err
-	}
-
 	if  this.authenticated {
-		msg := fmt.Sprintf("%s client %s tried to log in while already authenticated", this.socket.RemoteAddr(), this.user.Username)
+		msg := fmt.Sprintf("client tried to log in while already authenticated")
 		this.sendMessage(&Dictionary{"error": "you are already authenticated"})
 		return errors.New(msg)
 	}
 
 	var credentials database.User
-	err = json.Unmarshal(message, &credentials)
+	err := json.Unmarshal([]byte(this.body), &credentials)
 
 	if err != nil {
-		msg := fmt.Sprintf("client.login failed to unmarshal message: %s", message)
+		msg := fmt.Sprintf("client.login failed to unmarshal message: %s", this.body)
 		this.sendMessage(&Dictionary{"error": err.Error()})
 		this.disconnect()
 		return errors.New(msg)
@@ -42,14 +35,14 @@ func (this *Client) login() error {
 
 	if this.manager.UserIsOnline(&credentials) {
 		this.sendMessage(&Dictionary{"error": "this account is already logged in"})
-		const msg = "credentials.Login: tried to log in to already active session %v %v"
-		return fmt.Errorf(msg, credentials.Username, this.socket.RemoteAddr())
+		const msg = "credentials.Login: tried to log in to already active session %s"
+		return fmt.Errorf(msg, credentials.Username)
 	}
 
 	this.user = credentials
 	this.authenticated = true
 	this.sendMessage(&Dictionary{"authenticated": true})
 	this.manager.AddOnlineUser(&this.user)
-	log.Printf("Client authenticated: %s", this.user.Username)
+	log.Printf("%s client authenticated", this.getFormattedClientIP())
 	return nil
 }

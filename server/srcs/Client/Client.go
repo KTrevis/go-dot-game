@@ -2,8 +2,11 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"server/database"
+	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -14,9 +17,21 @@ type Client struct {
 	socket  		*websocket.Conn
 	manager 		*WebSocketManager
 	authenticated	bool
+	body			string
 }
 
 type Dictionary map[string]any
+
+func (this *Client) getFormattedClientIP() string {
+	str := fmt.Sprintf("[%s", this.socket.RemoteAddr())
+
+	if this.user.Username != "" {
+		str += fmt.Sprintf(" %s", this.user.Username)
+	}
+
+	str += "]"
+	return str
+}
 
 func (this *Client) disconnect() {
 	this.manager.RemoveClient(this.socket)
@@ -24,41 +39,41 @@ func (this *Client) disconnect() {
 
 func (this *Client) treatMessage() {
 	var err error
-	const msg = "%s Received message type %s from client %s"
-	log.Printf(msg, this.socket.RemoteAddr(), this.msgType, this.user.Username)
+	const msg = "%s received message type %s"
+	log.Printf(msg, this.getFormattedClientIP(), this.msgType)
 
 	switch this.msgType {
 	case "LOGIN":
 		err = this.login()
 
-	case "GET_CLASSES":
-
 	default:
-		const msg = "%s Unknown message type %s, disconnecting client %s"
-		log.Printf(msg, this.socket.RemoteAddr(), this.msgType, this.user.Username)
+		const msg = "%s unknown message type %s, disconnecting client"
+		log.Printf(msg, this.getFormattedClientIP(), this.msgType)
 		this.disconnect()
 		return
 	}
 
 	if err != nil {
-		log.Printf("Client.treatMessage: %s", err.Error())
+		log.Printf("%s Client.treatMessage: %s", this.getFormattedClientIP(), err.Error())
 	}
 }
 
 func (this *Client) setMessageType(message []byte) error {
-	err := json.Unmarshal(message, &this.msgType)
+	split := strings.Split(string(message), "\r\n")
 
-	if err != nil {
-		const msg = "client.setMessage failed to unmarshal message: %s"
-		log.Printf(msg, message)
-		this.disconnect()
-		return err
+	if len(split) < 2 {
+		const msg = "%s client.setMessage missing header in request"
+		log.Printf(msg, this.getFormattedClientIP())
+		return errors.New(msg)
 	}
+
+	this.msgType = split[0]
+	this.body = split[len(split) - 1]
 	return nil
 }
 
 func (this *Client) Loop() {
-	log.Printf("Client.Loop: new websocket connected %v", this.socket.RemoteAddr())
+	log.Printf("%s Client.Loop: new websocket connected", this.getFormattedClientIP())
 	for {
 		_, message, err := this.socket.ReadMessage()
 
