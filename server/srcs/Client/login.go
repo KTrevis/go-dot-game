@@ -17,9 +17,8 @@ func (this *Client) login() error {
 	}
 
 	if  this.authenticated {
-		msg := fmt.Sprintf("client %s tried to log in while already authenticated", this.user.Username)
+		msg := fmt.Sprintf("client %s tried to log in while already authenticated %s", this.user.Username, this.socket.RemoteAddr())
 		this.sendMessage(&Dictionary{"error": "you are already authenticated"})
-		this.disconnect()
 		return errors.New(msg)
 	}
 
@@ -42,8 +41,9 @@ func (this *Client) login() error {
 	}
 
 	if this.manager.UserIsOnline(&credentials) {
-		this.sendMessage(&Dictionary{"error": "this account is logged in elsewhere"})
-		return fmt.Errorf("credentials.Login: user %s session already active", credentials.Username)
+		this.sendMessage(&Dictionary{"error": "this account is already logged in"})
+		const msg = "credentials.Login: tried to log in to already active session %v %v"
+		return fmt.Errorf(msg, credentials.Username, this.socket.RemoteAddr())
 	}
 
 	this.user = credentials
