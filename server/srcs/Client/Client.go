@@ -22,7 +22,7 @@ type Client struct {
 
 type Dictionary map[string]any
 
-func (this *Client) getFormattedClientIP() string {
+func (this *Client) getFormattedIP() string {
 	str := fmt.Sprintf("[%s", this.socket.RemoteAddr())
 
 	if this.user.Username != "" {
@@ -40,24 +40,31 @@ func (this *Client) disconnect() {
 func (this *Client) treatMessage() {
 	var err error
 	const msg = "%s received message type %s"
-	log.Printf(msg, this.getFormattedClientIP(), this.msgType)
+	log.Printf(msg, this.getFormattedIP(), this.msgType)
+	defer log.Printf("%s disconnected", this.getFormattedIP())
 
 	switch this.msgType {
 	case "LOGIN":
 		err = this.login()
 
 	case "GET_CLASSES":
+		if this.authenticated == false {
+			this.disconnect()
+			return
+		}
 		this.sendMessage(&Dictionary{"classes": classes.GetClassesName()})
+
+	case "CREATE_CHARACTER":
 
 	default:
 		const msg = "%s unknown message type %s, disconnecting client"
-		log.Printf(msg, this.getFormattedClientIP(), this.msgType)
+		log.Printf(msg, this.getFormattedIP(), this.msgType)
 		this.disconnect()
 		return
 	}
 
 	if err != nil {
-		log.Printf("%s Client.treatMessage: %s", this.getFormattedClientIP(), err.Error())
+		log.Printf("%s Client.treatMessage: %s", this.getFormattedIP(), err.Error())
 	}
 }
 
@@ -66,7 +73,8 @@ func (this *Client) setMessageType(message []byte) error {
 
 	if len(split) != 2 {
 		const msg = "%s Client.setMessage missing header in request"
-		log.Printf(msg, this.getFormattedClientIP())
+		log.Printf(msg, this.getFormattedIP())
+		this.sendMessage(&Dictionary{"error": "invalid request"})
 		return errors.New(msg)
 	}
 
@@ -76,7 +84,7 @@ func (this *Client) setMessageType(message []byte) error {
 }
 
 func (this *Client) Loop() {
-	log.Printf("%s Client.Loop: new websocket connected", this.getFormattedClientIP())
+	log.Printf("%s Client.Loop: new websocket connected", this.getFormattedIP())
 	for {
 		_, message, err := this.socket.ReadMessage()
 

@@ -43,6 +43,6 @@ func (this *Client) login() error {
 	this.authenticated = true
 	this.sendMessage(&Dictionary{"authenticated": true})
 	this.manager.AddOnlineUser(&this.user)
-	log.Printf("%s authenticated", this.getFormattedClientIP())
+	log.Printf("%s authenticated", this.getFormattedIP())
 	return nil
 }

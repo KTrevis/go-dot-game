@@ -46,15 +46,15 @@ func (this *WebSocketManager) RemoveClient(socket *websocket.Conn) {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
 
-	client, ok := this.Clients[socket]
+	_, ok := this.Clients[socket]
 
 	if !ok {
 		return
 	}
-	log.Printf("%s disconnected", client.getFormattedClientIP())
 
 	this.removeOnlineUser(socket)
 	delete(this.Clients, socket)
+	socket.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1000, "invalid request"))
 	socket.Close()
 }
 

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"net/http"
 	"server/Client"
 	"server/database"
 	"server/views"
@@ -14,10 +16,17 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(req *http.Request) bool {
+		return true
+	},
 }
 
 func createWebsocket(context *gin.Context, manager *client.WebSocketManager) {
-	socket, _ := upgrader.Upgrade(context.Writer, context.Request, nil)
+	socket, err := upgrader.Upgrade(context.Writer, context.Request, nil)
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		return
+	}
 	manager.AddClient(socket)
 	go manager.Clients[socket].Loop()
 }
@@ -33,6 +42,8 @@ func setupViews(router *gin.Engine, manager *client.WebSocketManager) {
 	router.POST("/api/register", func(c *gin.Context) {
 		api.Register(c, manager.DB)
 	})
+
+	router.Static("/game", "./game")
 	router.LoadHTMLGlob("./templates/*")
 }
 
