@@ -54,6 +54,7 @@ func (this *Client) treatMessage() {
 		this.sendMessage(&Dictionary{"classes": classes.GetClassesName()})
 
 	case "CREATE_CHARACTER":
+		fmt.Printf("this.body: %v\n", this.body)
 
 	default:
 		const msg = "%s unknown message type %s, disconnecting client"

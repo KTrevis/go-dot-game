@@ -10,8 +10,7 @@ from .login.test import testLogin
 
 
 async def main():
-    socket = await websockets.connect("ws://localhost:8080/websocket")
-    await testLogin(socket)
+    await testLogin()
     await testDDOS()
     log.success("[ALL TESTS OK]\n")
 
