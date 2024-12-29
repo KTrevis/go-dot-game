@@ -20,7 +20,7 @@ async def doubleLogin():
     await sendMessage(socket, "LOGIN", msg)
 
     data: dict[str, Any] = json.loads(await socket.recv())
-    data: dict[str, Any] = json.loads(await socket.recv())
+    data = json.loads(await socket.recv())
     assert "error" in data
     assert data["error"] == "you are already authenticated"
     await socket.close()
@@ -28,8 +28,8 @@ async def doubleLogin():
 
 async def testLogin():
     print("[LOGIN TESTS]\n")
+    await validLogin(),
     await asyncio.gather(
             invalidLogin(),
-            validLogin(),
+            doubleLogin()
             )
-    await doubleLogin()

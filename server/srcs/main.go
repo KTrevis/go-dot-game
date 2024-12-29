@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	cli "server/CLI"
 	"server/Client"
 	"server/database"
 	"server/views"
@@ -12,7 +13,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -21,14 +21,41 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func createWebsocket(context *gin.Context, manager *client.WebSocketManager) {
+func websocketCLI(context *gin.Context, manager *client.WebSocketManager) {
 	socket, err := upgrader.Upgrade(context.Writer, context.Request, nil)
+
 	if err != nil {
 		log.Printf("createdWebsocket failed: %s", err.Error())
 		return
 	}
+
+	cli := &cli.CLI {
+		Socket: socket,
+		Manager: manager,
+	}
+	go cli.Loop()
+}
+
+func websocketClient(context *gin.Context, manager *client.WebSocketManager) {
+	socket, err := upgrader.Upgrade(context.Writer, context.Request, nil)
+
+	if err != nil {
+		log.Printf("createdWebsocket failed: %s", err.Error())
+		return
+	}
+
 	manager.AddClient(socket)
 	go manager.Clients[socket].Loop()
+}
+
+func startCLI(manager *client.WebSocketManager) {
+	routerCLI := gin.Default()
+
+	routerCLI.GET("/cli", func(context *gin.Context) {
+		websocketCLI(context, manager)
+	})
+
+	routerCLI.Run("127.0.0.1:81")
 }
 
 func setupViews(router *gin.Engine, manager *client.WebSocketManager) {
@@ -36,7 +63,7 @@ func setupViews(router *gin.Engine, manager *client.WebSocketManager) {
 	router.GET("/", views.Index)
 
 	router.GET("/websocket", func(context *gin.Context) {
-		createWebsocket(context, manager)
+		websocketClient(context, manager)
 	})
 
 	router.POST("/api/register", func(c *gin.Context) {
@@ -51,6 +78,8 @@ func main() {
 	manager := client.NewWebSocketManager()
 	manager.DB = database.SetupDB()
 	router := gin.Default()
+
+	go startCLI(manager)
 	setupViews(router, manager)
 	router.Run(":80")
 }

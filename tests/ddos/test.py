@@ -9,7 +9,6 @@ async def createSocket():
     socket = await websockets.connect("ws://localhost:8080/websocket")
     await sendMessage(socket, "LOGIN", {"username": "test", "password": "test"})
     await sendMessage(socket, "LOGIN", {"username": "test", "password": "test"})
-    await socket.close()
 
 async def testDDOS():
     tasks = []
