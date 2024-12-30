@@ -11,6 +11,7 @@ import (
 type CLI struct {
 	Socket	*websocket.Conn
 	Manager	*client.WebSocketManager
+	split	[]string
 }
 
 func (this *CLI) sendMessage(msg string) {
@@ -19,6 +20,11 @@ func (this *CLI) sendMessage(msg string) {
 
 func (this *CLI) Loop() {
 	defer fmt.Printf("CLI connection closed")
+
+	m := map[string]func() {
+		"account": this.account,
+	}
+
 	for {
 		_, message, err := this.Socket.ReadMessage()
 
@@ -27,17 +33,10 @@ func (this *CLI) Loop() {
 			return
 		}
 
-		split := strings.Fields(string(message))
-
-		switch split[0] {
-		case "echo":
-			this.echo(split)
-
-		case "account":
-			this.account(split)
-
-		default:
-			this.sendMessage("unknown command")
+		this.split = strings.Fields(string(message))
+		
+		if f := this.validArg(m); f != nil {
+			f()
 		}
 	}
 }

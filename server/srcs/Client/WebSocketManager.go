@@ -30,6 +30,7 @@ func (this *WebSocketManager) AddClient(socket *websocket.Conn) {
 		socket:  socket,
 		authenticated: false,
 	}
+	go this.Clients[socket].Loop()
 }
 
 func (this *WebSocketManager) removeOnlineUser(socket *websocket.Conn) {

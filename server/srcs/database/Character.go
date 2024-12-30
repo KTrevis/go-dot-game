@@ -8,11 +8,12 @@ import (
 )
 
 type Character struct {
-	UserID	int
-	Name	string
-	Level	int
-	XP		int
-	Class	base_class.IBaseClass
+	UserID		int
+	Name		string
+	Level		int
+	XP			int
+	Position	[2]int
+	Class		base_class.IBaseClass
 }
 
 func (this *Character) isValid() error {

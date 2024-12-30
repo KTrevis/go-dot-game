@@ -45,6 +45,7 @@ func (this *Client) treatMessage() {
 		"GET_CLASS_LIST": this.getClassList,
 		"CREATE_CHARACTER": this.createCharacter,
 		"DELETE_CHARACTER": this.deleteCharacter,
+		"GET_CHARACTER_LIST": this.getCharacterList,
 	}
 
 	fn, ok := m[this.msgType]

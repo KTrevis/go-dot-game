@@ -45,7 +45,6 @@ func websocketClient(context *gin.Context, manager *client.WebSocketManager) {
 	}
 
 	manager.AddClient(socket)
-	go manager.Clients[socket].Loop()
 }
 
 func startCLI(manager *client.WebSocketManager) {

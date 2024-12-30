@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"log"
 	"server/database"
 
@@ -13,7 +14,7 @@ type RegistrationForm struct {
 	ConfirmPassword string `form:"confirmPassword"`
 }
 
-func Register(c *gin.Context, db *database.DB) {
+func Register(c *gin.Context, db *database.DBPool) {
 	var form RegistrationForm
 
 	err := c.Bind(&form)
@@ -31,7 +32,10 @@ func Register(c *gin.Context, db *database.DB) {
 	user.Username = form.Username
 	user.Password = form.Password
 
-	err = user.CreateAccount(db)
+	conn, _ := db.Acquire(context.TODO())
+	defer conn.Release()
+
+	err = user.CreateAccount(conn)
 
 	if err != nil {
 		c.HTML(401, "index.html", gin.H{"msg": err.Error()})
