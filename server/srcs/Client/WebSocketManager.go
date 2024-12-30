@@ -10,7 +10,7 @@ import (
 type WebSocketManager struct {
 	Clients map[*websocket.Conn]*Client
 	onlineUsers map[int]bool
-	DB		*database.DB
+	DB		*database.DBPool
 	mutex   sync.Mutex
 }
 

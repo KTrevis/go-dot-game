@@ -5,19 +5,18 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"server/classes"
 	"server/database"
 	"strings"
 	"github.com/gorilla/websocket"
 )
 
 type Client struct {
-	user			database.User
-	msgType 		string
 	socket  		*websocket.Conn
 	manager 		*WebSocketManager
-	authenticated	bool
+	msgType 		string
 	body			string
+	authenticated	bool
+	user			database.User
 }
 
 type Dictionary map[string]any
@@ -25,7 +24,7 @@ type Dictionary map[string]any
 func (this *Client) getFormattedIP() string {
 	str := fmt.Sprintf("[%s", this.socket.RemoteAddr())
 
-	if this.user.Username != "" {
+	if this.authenticated {
 		str += fmt.Sprintf(" %s", this.user.Username)
 	}
 
@@ -38,33 +37,30 @@ func (this *Client) disconnect() {
 }
 
 func (this *Client) treatMessage() {
-	var err error
 	const msg = "%s received message type %s"
 	log.Printf(msg, this.getFormattedIP(), this.msgType)
 
-	switch this.msgType {
-	case "LOGIN":
-		err = this.login()
+	m := map[string]func()error {
+		"LOGIN": this.login,
+		"GET_CLASS_LIST": this.getClassList,
+		"CREATE_CHARACTER": this.createCharacter,
+		"DELETE_CHARACTER": this.deleteCharacter,
+	}
 
-	case "GET_CLASSES":
-		if this.authenticated == false {
-			this.disconnect()
-			return
-		}
-		this.sendMessage(&Dictionary{"classes": classes.GetClassesName()})
-
-	case "CREATE_CHARACTER":
-		fmt.Printf("this.body: %v\n", this.body)
-
-	default:
+	fn, ok := m[this.msgType]
+	
+	if !ok {
 		const msg = "%s unknown message type %s, disconnecting client"
 		log.Printf(msg, this.getFormattedIP(), this.msgType)
 		this.disconnect()
 		return
 	}
 
+	err := fn()
+
 	if err != nil {
-		log.Printf("%s Client.treatMessage: %s", this.getFormattedIP(), err.Error())
+		const msg = "%s Client.treatMessage: %s"
+		log.Printf(msg, this.getFormattedIP(), err.Error())
 	}
 }
 

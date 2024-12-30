@@ -14,8 +14,7 @@ async def sendMessage(socket: ClientConnection, type: str, data: dict[str, Any])
     message += json.dumps(data)
     await socket.send(message)
 
-async def sendMessageAndRead(socket: ClientConnection, type: str, data: dict[str, Any]) -> dict[str, Any]:
-    data: dict[str, Any] = {}
+async def sendMessageAndRead(socket: ClientConnection, type: str, data: dict[str, Any]):
     await sendMessage(socket, type, data)
-    data = await json.loads(await socket.recv())
+    data = json.loads(await socket.recv())
     return data

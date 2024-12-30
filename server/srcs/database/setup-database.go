@@ -9,7 +9,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type DB = pgxpool.Pool
+type DBPool = pgxpool.Pool
+type DB = pgxpool.Conn
 
 func createTable(db *DB, name string, fields []string) {
 	var query = "CREATE TABLE " + name + " ("
@@ -22,7 +23,7 @@ func createTable(db *DB, name string, fields []string) {
 	}
 	query += ");"
 
-	_, err := db.Exec(context.Background(), query)
+	_, err := db.Exec(context.TODO(), query)
 
 	if err == nil {
 		log.Printf("created %s table", name)
@@ -34,21 +35,43 @@ func createTable(db *DB, name string, fields []string) {
 func createUserTable(db *DB) {
 	createTable(db, "users", []string{
 		"id SERIAL PRIMARY KEY",
-		"username text NOT NULL",
-		"password text NOT NULL",
+		"username TEXT NOT NULL UNIQUE",
+		"password TEXT NOT NULL",
 	})
 }
 
-func SetupDB() *DB {
+func createCharactersTable(db *DB) {
+	createTable(db, "characters", []string{
+		"id SERIAL PRIMARY KEY",
+		"user_id INTEGER REFERENCES users(id) ON DELETE CASCADE",
+		"name TEXT NOT NULL UNIQUE",
+		"class TEXT NOT NULL",
+		"level INTEGER NOT NULL",
+		"xp INTEGER NOT NULL",
+	})
+}
+
+func connectToDB() *DBPool {
 	user := os.Getenv("POSTGRES_USER")
 	password := os.Getenv("POSTGRES_PASSWORD")
 
-	var url = fmt.Sprintf("postgres://%s:%s@postgres:5432/postgres", user, password)
-	db, err := pgxpool.New(context.Background(), url)
+	const format = "postgres://%s:%s@postgres:5432/postgres"
+	url := fmt.Sprintf(format, user, password)
+	db, err := pgxpool.New(context.TODO(), url)
 
 	if err != nil {
 		panic(err)
 	}
-	createUserTable(db)
+	return db
+}
+
+func SetupDB() *DBPool {
+	db := connectToDB()
+	conn, _ := db.Acquire(context.TODO())
+	defer conn.Release()
+
+	createUserTable(conn)
+	createCharactersTable(conn)
+
 	return db
 }

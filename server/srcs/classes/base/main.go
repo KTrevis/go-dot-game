@@ -1,4 +1,5 @@
-package base
+package base_class
 
 type IBaseClass interface {
+	GetName() string
 }

@@ -18,7 +18,6 @@ func (this *CLI) sendMessage(msg string) {
 }
 
 func (this *CLI) Loop() {
-	fmt.Printf("new CLI connection")
 	defer fmt.Printf("CLI connection closed")
 	for {
 		_, message, err := this.Socket.ReadMessage()

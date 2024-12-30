@@ -15,32 +15,30 @@ type User struct {
 	ID			int		`db:"id"`
 }
 
-func (this *User) usernameTaken(db *DB) bool {
-	var found string
-
-	res := db.QueryRow(context.Background(), "SELECT username FROM users WHERE username=$1;", this.Username)
-	err := res.Scan(&found)
-	return err == nil
-}
-
-// Returns nil if the user has been successfully added to the database.
-func (this *User) CreateAccount(db *DB) error {
+func (this *User) isValid() error {
 	const MINIMUM_LEN = 4
 
 	if len(this.Username) < MINIMUM_LEN {
-		return fmt.Errorf("username must be at least %d characters long", MINIMUM_LEN)
+		const format = "username must be at least %d characters long"
+		return fmt.Errorf(format, MINIMUM_LEN)
 	}
 
 	if len(this.Password) < MINIMUM_LEN {
-		return fmt.Errorf("password must be at least %d characters long", MINIMUM_LEN)
+		const format = "password must be at least %d characters long"
+		return fmt.Errorf(format, MINIMUM_LEN)
 	}
 
 	if strings.Index(this.Username, " ") != -1 {
-		return fmt.Errorf("spaces are not allowed in username")
+		const format = "spaces are not allowed in username"
+		return fmt.Errorf(format)
 	}
 
-	if this.usernameTaken(db) {
-		return fmt.Errorf("username already taken")
+	return nil
+}
+
+func (this *User) CreateAccount(db *DB) error {
+	if err := this.isValid(); err != nil {
+		return err
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(this.Password), 10)
@@ -51,17 +49,22 @@ func (this *User) CreateAccount(db *DB) error {
 
 	this.Password = string(hash)
 	const query = "INSERT INTO users (username, password) VALUES ($1, $2);"
-	_, err = db.Exec(context.Background(), query, this.Username, this.Password)
+	_, err = db.Exec(context.TODO(), query, this.Username, this.Password)
 
-	return err
+	if err != nil {
+		return errors.New("username already taken")
+	}
+
+	return nil
 }
 
 func (this *User) Login(db *DB, onlineUsers map[int]bool) error {
 	var user User
-	err := db.QueryRow(context.Background(), "SELECT (username, password, id) FROM users WHERE username=$1;", this.Username).Scan(&user)
+	const query = "SELECT (username, password, id) FROM users WHERE username=$1;"
+	err := db.QueryRow(context.TODO(), query, this.Username).Scan(&user)
 	
 	if err != nil {
-		return fmt.Errorf("user %s not found", this.Username)
+		return fmt.Errorf("account %s not found", this.Username)
 	}
 
 	if _, ok := onlineUsers[user.ID]; ok {

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -25,13 +26,17 @@ func (this *Client) login() error {
 		return errors.New(msg)
 	}
 
-	err = credentials.Login(this.manager.DB, this.manager.onlineUsers)
+	conn, _ := this.manager.DB.Acquire(context.TODO())
+	defer conn.Release()
+
+	err = credentials.Login(conn, this.manager.onlineUsers)
 
 	if err != nil {
 		msg := fmt.Sprintf("credentials.Login: %s", err.Error())
 		this.sendMessage(&Dictionary{"error": err.Error()})
 		return errors.New(msg)
 	}
+
 
 	this.user = credentials
 	this.authenticated = true

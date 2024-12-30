@@ -2,10 +2,10 @@ package classes
 
 import (
 	mage "server/classes/Mage"
-	"server/classes/base"
+	base_class "server/classes/base"
 )
 
-var classes = map[string]base.IBaseClass{
+var classes = map[string]base_class.IBaseClass{
 	"Mage": &mage.Mage{
 		Name: "Mage",
 	},
@@ -20,10 +20,10 @@ func GetClassesName() []string {
 	return names
 }
 
-func GetClasses() map[string]base.IBaseClass {
+func GetClasses() map[string]base_class.IBaseClass {
 	return classes
 }
 
-func GetClass(name string) base.IBaseClass {
+func GetClass(name string) base_class.IBaseClass {
 	return classes[name]
 }

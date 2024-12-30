@@ -1,17 +1,16 @@
 import asyncio
-from colored_print import log
+from colorama import Fore
 
-from .characters.test import testCharacters
-from .ddos.test import testDDOS
-from .login.test import testLogin
+from .tests.characters.test import testCharacters
+from .tests.ddos.test import testDDOS
+from .tests.login.test import testLogin
 
 async def main():
-    # await testLogin()
-    await asyncio.gather(
-        testLogin(),
-        # testCharacters(),
+    await testLogin()
+    _ = await asyncio.gather(
+        testCharacters(),
     )
-    # await testDDOS()
-    log.success("[ALL TESTS OK]\n")
+    await testDDOS()
+    print(f"{Fore.GREEN}[ALL TESTS OK]\n")
 
 asyncio.run(main())
