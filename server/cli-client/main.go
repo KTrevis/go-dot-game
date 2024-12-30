@@ -22,16 +22,21 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for {
+		fmt.Print("> ")
 		scanner.Scan()
 
 		if err := scanner.Err(); err != nil {
 			fmt.Printf("err: %v\n", err)
 			return
 		}
-		
-		if strings.TrimSpace(scanner.Text()) != "" {
-			socket.WriteMessage(websocket.TextMessage, []byte(scanner.Text()))
+
+		cmd := scanner.Text()
+
+		if strings.TrimSpace(cmd) == "" {
+			continue
 		}
+
+		socket.WriteMessage(websocket.TextMessage, []byte(cmd))
 
 		_, msg, err := socket.ReadMessage()
 

@@ -31,8 +31,7 @@ func Register(c *gin.Context, db *database.DB) {
 	user.Username = form.Username
 	user.Password = form.Password
 
-	reqC := c.Request.Context()
-	err = user.AddToDB(&reqC, db)
+	err = user.CreateAccount(db)
 
 	if err != nil {
 		c.HTML(401, "index.html", gin.H{"msg": err.Error()})

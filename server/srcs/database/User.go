@@ -15,16 +15,16 @@ type User struct {
 	ID			int		`db:"id"`
 }
 
-func (this *User) usernameTaken(c *context.Context, db *DB) bool {
+func (this *User) usernameTaken(db *DB) bool {
 	var found string
 
-	res := db.QueryRow(*c, "SELECT username FROM users WHERE username=$1;", this.Username)
+	res := db.QueryRow(context.Background(), "SELECT username FROM users WHERE username=$1;", this.Username)
 	err := res.Scan(&found)
 	return err == nil
 }
 
 // Returns nil if the user has been successfully added to the database.
-func (this *User) AddToDB(c *context.Context, db *DB) error {
+func (this *User) CreateAccount(db *DB) error {
 	const MINIMUM_LEN = 4
 
 	if len(this.Username) < MINIMUM_LEN {
@@ -39,7 +39,7 @@ func (this *User) AddToDB(c *context.Context, db *DB) error {
 		return fmt.Errorf("spaces are not allowed in username")
 	}
 
-	if this.usernameTaken(c, db) {
+	if this.usernameTaken(db) {
 		return fmt.Errorf("username already taken")
 	}
 
@@ -51,7 +51,7 @@ func (this *User) AddToDB(c *context.Context, db *DB) error {
 
 	this.Password = string(hash)
 	const query = "INSERT INTO users (username, password) VALUES ($1, $2);"
-	_, err = db.Exec(*c, query, this.Username, this.Password)
+	_, err = db.Exec(context.Background(), query, this.Username, this.Password)
 
 	return err
 }

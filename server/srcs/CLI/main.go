@@ -33,6 +33,10 @@ func (this *CLI) Loop() {
 		switch split[0] {
 		case "echo":
 			this.echo(split)
+
+		case "account":
+			this.account(split)
+
 		default:
 			this.sendMessage("unknown command")
 		}
