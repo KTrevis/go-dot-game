@@ -3,7 +3,7 @@ import websockets
 from typing import Any
 from websockets.asyncio.client import ClientConnection
 
-from ...utils import login, read, sendMessage
+from ...utils import connect, login, read, register, sendMessage
 
 async def deleteCharacter(socket: ClientConnection):
     await sendMessage(socket, "DELETE_CHARACTER", {"name": "test"})
@@ -80,9 +80,10 @@ async def loggedInTest():
     assert msgType == "GET_CHARACTER_LIST"
 
     await socket.close()
+    print(f"{Fore.GREEN}[CHARACTERS LOGGED IN OK]\n")
 
 async def loggedOutTest():
-    socket = await websockets.connect("ws://localhost:8080/websocket")
+    socket = await connect()
     _ = await login(socket)
 
     await sendMessage(socket, "CREATE_CHARACTER", {"name": "test", "class": "Mage"})
@@ -91,7 +92,7 @@ async def loggedOutTest():
     assert "success" in data
 
     await socket.close()
-    socket = await websockets.connect("ws://localhost:8080/websocket")
+    socket = await connect()
 
     await sendMessage(socket, "GET_CHARACTER_LIST", {})
     msgType, data = await read(socket)
@@ -108,14 +109,29 @@ async def loggedOutTest():
     assert msgType == "CREATE_CHARACTER"
     assert "error" in data
 
+    await anotherAccountTest()
     _ = await login(socket)
 
     await sendMessage(socket, "DELETE_CHARACTER", {"name": "test", "class": "Mage"})
     msgType, data = await read(socket)
     assert "success" in data
     assert msgType == "DELETE_CHARACTER"
+    await socket.close()
+
+    print(f"{Fore.GREEN}[CHARACTERS LOGGED OUT OK]\n")
+
+async def anotherAccountTest():
+    socket = await connect()
+    _ = await register("username", "password")
+    _, data = await login(socket, "username", "password")
+    assert "authenticated" in data
+
+    await sendMessage(socket, "DELETE_CHARACTER", {"name": "test"})
+    _, data = await read(socket)
+    assert "error" in data
+    print(f"{Fore.GREEN}[DELETING CHARACTER ANOTHER ACCOUNT OK]\n")
+    await socket.close()
 
 async def testCharacters():
     await loggedInTest()
     await loggedOutTest()
-    print(f"{Fore.GREEN}[CHARACTERS OK]\n")

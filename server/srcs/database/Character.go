@@ -24,6 +24,10 @@ func (this *Character) isValid() error {
 	if strings.Index(this.Name, " ") != -1 {
 		return errors.New("invalid character name")
 	}
+
+	if len(this.Name) < 4 {
+		return errors.New("character name must be at least 4 characters long")
+	}
 	return nil
 }
 
