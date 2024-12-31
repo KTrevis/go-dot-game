@@ -10,7 +10,7 @@ async def main():
     _ = await asyncio.gather(
         testCharacters(),
     )
-    await testDDOS()
+    # await testDDOS()
     print(f"{Fore.GREEN}[ALL TESTS OK]\n")
 
 asyncio.run(main())

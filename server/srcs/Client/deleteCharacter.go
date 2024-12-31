@@ -14,6 +14,7 @@ func (this *Client) deleteCharacter() error {
 	err := json.Unmarshal([]byte(this.body), &data)
 
 	if err != nil {
+		this.disconnect()
 		return errors.New("Client.deleteCharacter: failed to unmarshal")
 	}
 

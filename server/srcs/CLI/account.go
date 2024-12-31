@@ -32,7 +32,7 @@ func (this *CLI) account() {
 		"create": this.createAccount,
 	}
 
-	if f := this.validArg(m); f != nil {
+	if f := this.getFunc(m, 1); f != nil {
 		f()
 	}
 }

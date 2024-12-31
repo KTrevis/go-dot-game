@@ -13,17 +13,17 @@ func getArgumentList(m map[string]func()) string {
 	return str
 }
 
-func (this *CLI) validArg(m map[string]func()) func() {
-	if len(this.split) < 2 {
-		msg := "invalid command. arguments possible: "
+func (this *CLI) getFunc(m map[string]func(), index int) func() {
+	if len(this.split) <= index {
+		msg := "invalid argument. arguments possible: "
 		msg += getArgumentList(m)
 		this.sendMessage(msg)
 		return nil
 	}
 
-	fn, ok := m[this.split[1]]
+	fn, ok := m[this.split[index]]
 	if !ok {
-		msg := "invalid argument. arguments possible: "
+		msg := "invalid command. commands possible: "
 		msg += getArgumentList(m)
 		this.sendMessage(msg)
 		return nil

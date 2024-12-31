@@ -23,7 +23,9 @@ func main() {
 
 	for {
 		fmt.Print("> ")
-		scanner.Scan()
+		if !scanner.Scan() {
+			return
+		}
 
 		if err := scanner.Err(); err != nil {
 			fmt.Printf("err: %v\n", err)

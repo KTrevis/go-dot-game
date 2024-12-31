@@ -3,8 +3,6 @@ package client
 import (
 	"context"
 	"errors"
-	"fmt"
-	"server/database"
 )
 
 func (this *Client) getCharacterList() error {
@@ -17,11 +15,31 @@ func (this *Client) getCharacterList() error {
 	conn, _ := this.manager.DB.Acquire(context.TODO())
 	defer conn.Release()
 
-	var characters []database.Character
-
-	const query = "SELECT (name, level, class) FROM users WHERE user_id=$1;"
+	const query = "SELECT (name, class, level, xp) FROM characters WHERE user_id=$1;"
 	rows, _ := conn.Query(context.TODO(), query, this.user.ID)
-	rows.Scan(&characters)
-	fmt.Printf("characters: %v\n", characters)
+
+	type data struct {
+		Name	string
+		Class	string
+		Level 	int
+		XP		int
+	}
+
+	var msg []data
+
+	for rows.Next() {
+		var data data
+		rows.Scan(&data)
+		msg = append(msg, data)
+	}
+
+	if msg == nil {
+		msg = make([]data, 0)
+	}
+
+	this.sendMessage(&Dictionary{
+		"characterList": msg,
+	})
+
 	return nil
 }

@@ -23,6 +23,7 @@ func (this *CLI) Loop() {
 
 	m := map[string]func() {
 		"account": this.account,
+		"character": this.character,
 	}
 
 	for {
@@ -35,7 +36,7 @@ func (this *CLI) Loop() {
 
 		this.split = strings.Fields(string(message))
 		
-		if f := this.validArg(m); f != nil {
+		if f := this.getFunc(m, 0); f != nil {
 			f()
 		}
 	}

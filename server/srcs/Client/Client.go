@@ -82,7 +82,9 @@ func (this *Client) setMessageType(message []byte) error {
 
 func (this *Client) Loop() {
 	log.Printf("%s connected", this.getFormattedIP())
-	defer log.Printf("%s disconnected", this.getFormattedIP())
+	defer func() { // this is because the string was formatted before the function was called
+		log.Printf("%s disconnected", this.getFormattedIP())
+	}()
 	for {
 		_, message, err := this.socket.ReadMessage()
 

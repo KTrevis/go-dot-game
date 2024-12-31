@@ -13,6 +13,7 @@ var classes = map[string]base_class.IBaseClass{
 
 func GetClassesName() []string {
 	var names []string
+
 	for key := range classes {
 		names = append(names, key)
 	}
