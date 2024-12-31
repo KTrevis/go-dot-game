@@ -34,7 +34,7 @@ func (this *Client) getCharacterList() error {
 	}
 
 	if msg == nil {
-		msg = make([]data, 0)
+		msg = []data{}
 	}
 
 	this.sendMessage(&Dictionary{
