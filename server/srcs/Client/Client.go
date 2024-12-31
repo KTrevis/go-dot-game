@@ -71,7 +71,6 @@ func (this *Client) setMessageType(message []byte) error {
 	if len(split) != 2 {
 		const msg = "%s Client.setMessage missing header in request"
 		log.Printf(msg, this.getFormattedIP())
-		this.sendMessage(&Dictionary{"error": "invalid request"})
 		return errors.New(msg)
 	}
 
@@ -102,7 +101,8 @@ func (this *Client) Loop() {
 	}
 }
 
-func (this *Client) sendMessage(msg *Dictionary) {
+func (this *Client) sendMessage(msgType string, msg *Dictionary) {
 	str, _ := json.Marshal(msg)
-	this.socket.WriteMessage(websocket.TextMessage, str)
+	msgType += fmt.Sprintf("\r\n%s", str)
+	this.socket.WriteMessage(websocket.TextMessage, []byte(msgType))
 }

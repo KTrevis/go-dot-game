@@ -3,88 +3,117 @@ import websockets
 from typing import Any
 from websockets.asyncio.client import ClientConnection
 
-from ...utils import login, sendMessageAndRead
+from ...utils import login, read, sendMessage
 
 async def deleteCharacter(socket: ClientConnection):
-    return await sendMessageAndRead(socket, "DELETE_CHARACTER", {"name": "test"})
+    await sendMessage(socket, "DELETE_CHARACTER", {"name": "test"})
+    return await read(socket)
 
 async def createCharacter(socket: ClientConnection):
-    return await sendMessageAndRead(socket, "CREATE_CHARACTER", {"name": "test", "class": "Mage"})
+    await sendMessage(socket, "CREATE_CHARACTER", {"name": "test", "class": "Mage"})
+    return await read(socket)
 
 async def loggedInTest():
     socket = await websockets.connect("ws://localhost:8080/websocket")
-    await login(socket)
+    _ = await login(socket)
 
     data = await deleteCharacter(socket)
 
-    data = await createCharacter(socket)
+    msgType, data = await createCharacter(socket)
+    assert msgType == "CREATE_CHARACTER"
     assert "success" in data
 
-    data = await sendMessageAndRead(socket, "GET_CHARACTER_LIST", {})
+    await sendMessage(socket, "GET_CHARACTER_LIST", {})
+    msgType, data = await read(socket)
     arr: list[dict[str, Any]] = data["characterList"]
     assert len(arr) == 1
+    assert msgType == "GET_CHARACTER_LIST"
 
-    data = await createCharacter(socket)
+    msgType, data = await createCharacter(socket)
+    assert msgType == "CREATE_CHARACTER"
     assert "error" in data
 
-    data = await sendMessageAndRead(socket, "GET_CHARACTER_LIST", {})
+    await sendMessage(socket, "GET_CHARACTER_LIST", {})
+    msgType, data = await read(socket)
     arr: list[dict[str, Any]] = data["characterList"]
     assert len(arr) == 1
+    assert msgType == "GET_CHARACTER_LIST"
 
-    data = await deleteCharacter(socket)
+    msgType, data = await deleteCharacter(socket)
+    assert msgType == "DELETE_CHARACTER"
     assert "success" in data
 
-    data = await sendMessageAndRead(socket, "GET_CHARACTER_LIST", {})
+    await sendMessage(socket, "GET_CHARACTER_LIST", {})
+    msgType, data = await read(socket)
     arr: list[dict[str, Any]] = data["characterList"]
     assert len(arr) == 0
+    assert msgType == "GET_CHARACTER_LIST"
 
-    data = await deleteCharacter(socket)
+    msgType, data = await deleteCharacter(socket)
     assert "error" in data
+    assert msgType == "DELETE_CHARACTER"
 
-    data = await sendMessageAndRead(socket, "GET_CHARACTER_LIST", {})
+    await sendMessage(socket, "GET_CHARACTER_LIST", {})
+    msgType, data = await read(socket)
     arr: list[dict[str, Any]] = data["characterList"]
     assert len(arr) == 0
+    assert msgType == "GET_CHARACTER_LIST"
 
-
-    data = await createCharacter(socket)
+    msgType, data = await createCharacter(socket)
     assert "success" in data
+    assert msgType == "CREATE_CHARACTER"
 
-    data = await sendMessageAndRead(socket, "GET_CHARACTER_LIST", {})
+    await sendMessage(socket, "GET_CHARACTER_LIST", {})
+    msgType, data = await read(socket)
     arr: list[dict[str, Any]] = data["characterList"]
     assert len(arr) == 1
+    assert msgType == "GET_CHARACTER_LIST"
 
-    data = await deleteCharacter(socket)
+    msgType, data = await deleteCharacter(socket)
     assert "success" in data
+    assert msgType == "DELETE_CHARACTER"
 
-    data = await sendMessageAndRead(socket, "GET_CHARACTER_LIST", {})
+    await sendMessage(socket, "GET_CHARACTER_LIST", {})
+    msgType, data = await read(socket)
     arr: list[dict[str, Any]] = data["characterList"]
     assert len(arr) == 0
+    assert msgType == "GET_CHARACTER_LIST"
 
     await socket.close()
 
 async def loggedOutTest():
     socket = await websockets.connect("ws://localhost:8080/websocket")
-    await login(socket)
+    _ = await login(socket)
 
-    data = await sendMessageAndRead(socket, "CREATE_CHARACTER", {"name": "test", "class": "Mage"})
+    await sendMessage(socket, "CREATE_CHARACTER", {"name": "test", "class": "Mage"})
+    msgType, data = await read(socket)
+    assert msgType == "CREATE_CHARACTER"
     assert "success" in data
 
     await socket.close()
     socket = await websockets.connect("ws://localhost:8080/websocket")
 
-    data = await sendMessageAndRead(socket, "GET_CHARACTER_LIST", {})
+    await sendMessage(socket, "GET_CHARACTER_LIST", {})
+    msgType, data = await read(socket)
+    assert msgType == "GET_CHARACTER_LIST"
     assert "error" in data
 
-    data = await sendMessageAndRead(socket, "DELETE_CHARACTER", {"name": "test", "class": "Mage"})
+    await sendMessage(socket, "DELETE_CHARACTER", {"name": "test", "class": "Mage"})
+    msgType, data = await read(socket)
+    assert msgType == "DELETE_CHARACTER"
     assert "error" in data
 
-    data = await sendMessageAndRead(socket, "CREATE_CHARACTER", {"name": "oui", "class": "Mage"})
+    await sendMessage(socket, "CREATE_CHARACTER", {"name": "oui", "class": "Mage"})
+    msgType, data = await read(socket)
+    assert msgType == "CREATE_CHARACTER"
     assert "error" in data
 
-    await login(socket)
+    _ = await login(socket)
 
-    data = await sendMessageAndRead(socket, "DELETE_CHARACTER", {"name": "test", "class": "Mage"})
+    await sendMessage(socket, "DELETE_CHARACTER", {"name": "test", "class": "Mage"})
+    msgType, data = await read(socket)
     assert "success" in data
+    assert msgType == "DELETE_CHARACTER"
 
 async def testCharacters():
     await loggedInTest()

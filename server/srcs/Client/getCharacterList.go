@@ -8,7 +8,7 @@ import (
 func (this *Client) getCharacterList() error {
 	if !this.authenticated {
 		const msg = "tried to get characters without authenticating"
-		this.sendMessage(&Dictionary{"error": msg})
+		this.sendMessage("GET_CHARACTER_LIST", &Dictionary{"error": msg})
 		return errors.New(msg)
 	}
 
@@ -37,7 +37,7 @@ func (this *Client) getCharacterList() error {
 		msg = []data{}
 	}
 
-	this.sendMessage(&Dictionary{
+	this.sendMessage("GET_CHARACTER_LIST", &Dictionary{
 		"characterList": msg,
 	})
 

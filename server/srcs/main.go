@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
-	cli "server/CLI"
+	"server/CLI"
 	"server/Client"
 	"server/database"
 	"server/views"

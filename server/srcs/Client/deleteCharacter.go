@@ -25,9 +25,9 @@ func (this *Client) deleteCharacter() error {
 	t, err := db.Exec(context.TODO(), query, data.Name, this.user.ID)
 
 	if err != nil || t.RowsAffected() == 0 {
-		this.sendMessage(&Dictionary{"error": "failed to delete character"})
+		this.sendMessage("DELETE_CHARACTER", &Dictionary{"error": "failed to delete character"})
 		return err
 	}
-	this.sendMessage(&Dictionary{"success": "character deleted"})
+	this.sendMessage("DELETE_CHARACTER", &Dictionary{"success": "character deleted"})
 	return nil
 }
