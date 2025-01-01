@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"server/CLI"
 	"server/Client"
 	"server/database"
+	gamemaps "server/maps"
 	"server/views"
 	"server/views/api"
 
@@ -74,6 +76,8 @@ func setupViews(router *gin.Engine, manager *client.WebSocketManager) {
 }
 
 func main() {
+	mapData := gamemaps.NewMapData("./maps/test.json")
+	fmt.Printf("mapData.Map: %v\n", mapData.Map)
 	manager := client.NewWebSocketManager()
 	manager.DB = database.SetupDB()
 	router := gin.Default()
