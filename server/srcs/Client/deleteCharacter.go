@@ -15,7 +15,7 @@ func (this *Client) deleteCharacter() error {
 
 	if err != nil {
 		this.disconnect()
-		return errors.New("Client.deleteCharacter: failed to unmarshal")
+		return errors.New("failed to unmarshal")
 	}
 
 	db, _ := this.manager.DB.Acquire(context.TODO())

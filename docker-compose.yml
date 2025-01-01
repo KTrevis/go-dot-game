@@ -1,18 +1,4 @@
 services:
-  go:
-    build: ./server
-    container_name: server
-    env_file:
-      .env
-    ports:
-      - 8080:80
-    networks:
-      - app-network
-    volumes:
-      - ./server/srcs:/app
-      - ./data/go:/go/pkg
-    restart: always
-
   postgres:
     image: postgres:17
     container_name: postgres
@@ -27,6 +13,23 @@ services:
       test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER"]
       interval: 0.5s
       retries: 10
+
+  go:
+    build: ./server
+    container_name: server
+    env_file:
+      .env
+    ports:
+      - 8080:80
+    networks:
+      - app-network
+    volumes:
+      - ./server/srcs:/app
+      - ./data/go:/go/pkg
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 networks:
   app-network:

@@ -20,7 +20,7 @@ func (this *Client) login() error {
 	err := json.Unmarshal([]byte(this.body), &credentials)
 
 	if err != nil {
-		msg := fmt.Sprintf("client.login failed to unmarshal message: %s", this.body)
+		msg := fmt.Sprintf("unmarshal failed: %s", this.body)
 		this.sendMessage("LOGIN", &Dictionary{"error": err.Error()})
 		this.disconnect()
 		return errors.New(msg)
@@ -32,7 +32,7 @@ func (this *Client) login() error {
 	err = credentials.Login(conn, this.manager.onlineUsers)
 
 	if err != nil {
-		msg := fmt.Sprintf("credentials.Login: %s", err.Error())
+		msg := fmt.Sprintln(err.Error())
 		this.sendMessage("LOGIN", &Dictionary{"error": err.Error()})
 		return errors.New(msg)
 	}

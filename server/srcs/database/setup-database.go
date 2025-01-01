@@ -48,6 +48,8 @@ func createCharactersTable(db *DB) {
 		"class TEXT NOT NULL",
 		"level INTEGER NOT NULL",
 		"xp INTEGER NOT NULL",
+		"x INTEGER NOT NULL DEFAULT 0",
+		"y INTEGER NOT NULL DEFAULT 0",
 	})
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"server/classes"
 	"server/database"
@@ -26,7 +27,7 @@ func (this *Client) createCharacter() error {
 
 	if err != nil {
 		this.disconnect()
-		return errors.New("Client.createCharacter: unmarshal failed")
+		return fmt.Errorf("unmarshal failed: %s", this.body)
 	}
 
 

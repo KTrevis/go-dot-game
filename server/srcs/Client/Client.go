@@ -17,6 +17,7 @@ type Client struct {
 	body			string
 	authenticated	bool
 	user			database.User
+	character		*database.Character
 }
 
 type Dictionary map[string]any
@@ -46,6 +47,9 @@ func (this *Client) treatMessage() {
 		"CREATE_CHARACTER": this.createCharacter,
 		"DELETE_CHARACTER": this.deleteCharacter,
 		"GET_CHARACTER_LIST": this.getCharacterList,
+		"GET_MAP": this.getMap,
+		"ENTER_WORLD": this.enterWorld,
+		"UPDATE_PLAYER_POSITION": this.updatePlayerPosition,
 	}
 
 	fn, ok := m[this.msgType]
@@ -60,8 +64,8 @@ func (this *Client) treatMessage() {
 	err := fn()
 
 	if err != nil {
-		const msg = "%s Client.treatMessage: %s"
-		log.Printf(msg, this.getFormattedIP(), err.Error())
+		const msg = "%s %s %s"
+		log.Printf(msg, this.getFormattedIP(), this.msgType, err.Error())
 	}
 }
 

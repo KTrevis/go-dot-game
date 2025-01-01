@@ -2,44 +2,58 @@ package gamemaps
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"server/utils"
 	"strings"
 )
 
-type Vector2 struct {
-	x int
-	y int
-}
-
 type MapData struct {
 	Data []int
-	Map [][]Vector2
+	Map [][]utils.Vector2
 	Height int
 	Width int
 }
 
-func getFile(path string) *MapData {
+func getData(mapName string) *MapData {
 	var data MapData
 
-	Data, _ := os.ReadFile(path)
+	mapName = fmt.Sprintf("./maps/%s.tmj", mapName)
+	Data, err := os.ReadFile(mapName)
+	
+	if err != nil {
+		fmt.Printf("MapData getData: failed to read file")
+		return nil
+	}
+
 	str := string(Data)
 	str = str[strings.Index(str, "[") + 1:]
 	str = str[:strings.LastIndex(str, "]")]
 	str = str[:strings.LastIndex(str, "]")]
-	json.Unmarshal([]byte(str), &data)
+
+	err = json.Unmarshal([]byte(str), &data)
+
+	if err != nil {
+		fmt.Printf("MapData getData: unmarshal failed: %s", str)
+		return nil
+	}
 	return &data
 }
 
-func NewMapData(path string) *MapData {
-	data := getFile(path)
+func NewMapData(mapName string) *MapData {
+	data := getData(mapName)
+
+	if data == nil {
+		return nil
+	}
 
 	for i := 0; i < len(data.Data); {
-		line := make([]Vector2, 0, data.Width)
+		line := make([]utils.Vector2, 0, data.Width)
 
 		for range data.Width {
-			line = append(line, Vector2{
-				x: (data.Data[i] - 1) % 11,
-				y: (data.Data[i] - 1) / 11,
+			line = append(line, utils.Vector2{
+				X: (data.Data[i] - 1) % 11,
+				Y: (data.Data[i] - 1) / 11,
 			})
 			i++
 			if i >= len(data.Data) {
@@ -47,6 +61,7 @@ func NewMapData(path string) *MapData {
 			}
 		}
 		data.Map = append(data.Map, line)
+
 		if i >= len(data.Data) {
 			break
 		}

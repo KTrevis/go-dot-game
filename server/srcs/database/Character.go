@@ -3,7 +3,10 @@ package database
 import (
 	"context"
 	"errors"
+	"fmt"
+	"server/classes"
 	"server/classes/base"
+	"server/utils"
 	"strings"
 )
 
@@ -12,7 +15,7 @@ type Character struct {
 	Name		string
 	Level		int
 	XP			int
-	Position	[2]int
+	Position	utils.Vector2
 	Class		base_class.IBaseClass
 }
 
@@ -48,4 +51,24 @@ func (this *Character) Create(db *DB) error {
 	}
 
 	return nil
+}
+
+func GetCharacterByName(db *DB, name string, userID int) *Character {
+	var character Character
+	class := ""
+
+	const query = "SELECT (user_id, name, level, xp), x, y, class FROM characters WHERE name=$1 AND user_id=$2;"
+	err := db.QueryRow(context.TODO(), query, name, userID).Scan(
+		&character, 
+		&character.Position.X, &character.Position.Y,
+		&class,
+	)
+
+	if err != nil {
+		fmt.Printf("GetByName: failed to find character %s", name)
+		return nil
+	}
+
+	character.Class = classes.GetClass(class)
+	return &character
 }
