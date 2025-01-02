@@ -22,7 +22,7 @@ type Client struct {
 	character		*database.Character
 }
 
-type Dictionary map[string]any
+type Dict map[string]any
 
 func (this *Client) getFormattedIP() string {
 	str := fmt.Sprintf("[%s", this.socket.RemoteAddr())
@@ -119,7 +119,7 @@ func (this *Client) Loop() {
 	}
 }
 
-func (this *Client) sendMessage(msgType string, msg *Dictionary) {
+func (this *Client) sendMessage(msgType string, msg *Dict) {
 	str, _ := json.Marshal(msg)
 	msgType += fmt.Sprintf("\r\n%s", str)
 	this.socket.WriteMessage(websocket.TextMessage, []byte(msgType))

@@ -29,13 +29,13 @@ func (this *Client) getMap() error {
 
 	if gamemap == nil {
 		const msg =  "could not find requested map"
-		this.sendMessage("GET_MAP", &Dictionary{
+		this.sendMessage("GET_MAP", &Dict{
 			"error": msg,
 		})
 		return errors.New(msg)
 	}
 
-	this.sendMessage("GET_MAP", &Dictionary{
+	this.sendMessage("GET_MAP", &Dict{
 		"map": gamemap,
 	})
 	return nil

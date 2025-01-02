@@ -12,7 +12,7 @@ import (
 func (this *Client) login() error {
 	if  this.authenticated {
 		msg := fmt.Sprintf("client tried to log in while already authenticated")
-		this.sendMessage("LOGIN", &Dictionary{"error": "you are already authenticated"})
+		this.sendMessage("LOGIN", &Dict{"error": "you are already authenticated"})
 		return errors.New(msg)
 	}
 
@@ -21,7 +21,7 @@ func (this *Client) login() error {
 
 	if err != nil {
 		msg := fmt.Sprintf("unmarshal failed: %s", this.body)
-		this.sendMessage("LOGIN", &Dictionary{"error": err.Error()})
+		this.sendMessage("LOGIN", &Dict{"error": err.Error()})
 		this.disconnect(msg)
 		return errors.New(msg)
 	}
@@ -33,14 +33,14 @@ func (this *Client) login() error {
 
 	if err != nil {
 		msg := fmt.Sprintln(err.Error())
-		this.sendMessage("LOGIN", &Dictionary{"error": err.Error()})
+		this.sendMessage("LOGIN", &Dict{"error": err.Error()})
 		return errors.New(msg)
 	}
 
 
 	this.user = credentials
 	this.authenticated = true
-	this.sendMessage("LOGIN", &Dictionary{"authenticated": true})
+	this.sendMessage("LOGIN", &Dict{"authenticated": true})
 	this.manager.AddOnlineUser(&this.user)
 	log.Printf("%s authenticated", this.getFormattedIP())
 	return nil

@@ -36,7 +36,7 @@ func (this *Client) enterWorld() error {
 	}
 
 	gamemap := gamemaps.GetMap("test")
-	this.sendMessage("ENTER_WORLD", &Dictionary{
+	this.sendMessage("ENTER_WORLD", &Dict{
 		"character": this.character,
 		"map": gamemap,
 	})

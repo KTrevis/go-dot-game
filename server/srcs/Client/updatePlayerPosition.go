@@ -27,7 +27,7 @@ func (this *Client) canUpdatePos() error {
 }
 
 func (this *Client) teleported(newPos *utils.Vector2i) bool {
-	vec := this.character.Position.Substract(newPos)
+	vec := this.character.Position.Sub(newPos)
 
 	if vec.X < -1 || vec.X > 1 {
 		return true

@@ -14,7 +14,7 @@ import (
 func (this *Client) createCharacter() error {
 	if this.authenticated == false {
 		const msg = "tried to create a character without authenticating"
-		this.sendMessage("CREATE_CHARACTER", &Dictionary{"error": msg})
+		this.sendMessage("CREATE_CHARACTER", &Dict{"error": msg})
 		return errors.New(msg)
 	}
 
@@ -43,11 +43,11 @@ func (this *Client) createCharacter() error {
 	defer conn.Release()
 
 	if err = character.Create(conn); err != nil {
-		this.sendMessage("CREATE_CHARACTER", &Dictionary{"error": err.Error()})
+		this.sendMessage("CREATE_CHARACTER", &Dict{"error": err.Error()})
 		return err
 	}
 
-	this.sendMessage("CREATE_CHARACTER", &Dictionary{"success": "character created"})
+	this.sendMessage("CREATE_CHARACTER", &Dict{"success": "character created"})
 	log.Printf("%s character created", this.getFormattedIP())
 	return nil
 }
