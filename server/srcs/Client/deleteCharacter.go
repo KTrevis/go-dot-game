@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 )
 
 func (this *Client) deleteCharacter() error {
@@ -14,8 +14,8 @@ func (this *Client) deleteCharacter() error {
 	err := json.Unmarshal([]byte(this.body), &data)
 
 	if err != nil {
-		this.disconnect()
-		return errors.New("failed to unmarshal")
+		this.disconnect("invalid payload")
+		return fmt.Errorf("unmarshal failed: %s", this.body)
 	}
 
 	db, _ := this.manager.DB.Acquire(context.TODO())

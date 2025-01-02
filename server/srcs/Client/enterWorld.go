@@ -30,8 +30,9 @@ func (this *Client) enterWorld() error {
 	this.character = database.GetCharacterByName(conn, data.Character, this.user.ID)
 
 	if this.character == nil {
-		this.disconnect()
-		return errors.New("failed to find character")
+		const msg = "failed to find character"
+		this.disconnect(msg)
+		return errors.New(msg)
 	}
 
 	this.sendMessage("ENTER_WORLD", &Dictionary{

@@ -33,8 +33,8 @@ func (this *Client) getFormattedIP() string {
 	return str
 }
 
-func (this *Client) disconnect() {
-	this.manager.RemoveClient(this.socket)
+func (this *Client) disconnect(reason string) {
+	this.manager.RemoveClient(this.socket, reason)
 }
 
 func (this *Client) treatMessage() {
@@ -57,7 +57,7 @@ func (this *Client) treatMessage() {
 	if !ok {
 		const msg = "%s unknown message type %s, disconnecting client"
 		log.Printf(msg, this.getFormattedIP(), this.msgType)
-		this.disconnect()
+		this.disconnect("invalid payload")
 		return
 	}
 
@@ -85,19 +85,22 @@ func (this *Client) setMessageType(message []byte) error {
 
 func (this *Client) Loop() {
 	log.Printf("%s connected", this.getFormattedIP())
-	defer func() { // this is because the string was formatted before the function was called
+	defer func() { 
+		// we use an anonymous function because the string
+		// was formatted before the function was called
 		log.Printf("%s disconnected", this.getFormattedIP())
 	}()
+
 	for {
 		_, message, err := this.socket.ReadMessage()
 
 		if err != nil {
-			this.disconnect()
+			this.disconnect("failed to read message")
 			return
 		}
 
 		if this.setMessageType(message) != nil {
-			this.disconnect()
+			this.disconnect("invalid payload")
 			return
 		}
 

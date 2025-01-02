@@ -21,7 +21,7 @@ func (this *Client) getMap() error {
 	err := json.Unmarshal([]byte(this.body), &data)
 
 	if err != nil {
-		this.disconnect()
+		this.disconnect("invalid payload")
 		return fmt.Errorf("unmarshal failed: %s", this.body)
 	}
 

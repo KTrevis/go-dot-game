@@ -22,7 +22,7 @@ func (this *Client) login() error {
 	if err != nil {
 		msg := fmt.Sprintf("unmarshal failed: %s", this.body)
 		this.sendMessage("LOGIN", &Dictionary{"error": err.Error()})
-		this.disconnect()
+		this.disconnect(msg)
 		return errors.New(msg)
 	}
 

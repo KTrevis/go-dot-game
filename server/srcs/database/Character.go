@@ -8,15 +8,18 @@ import (
 	"server/classes/base"
 	"server/utils"
 	"strings"
+	"time"
 )
 
 type Character struct {
-	UserID		int
-	Name		string
-	Level		int
-	XP			int
-	Position	utils.Vector2
-	Class		base_class.IBaseClass
+	UserID			int
+	Name			string
+	Level			int
+	XP				int
+	Position		utils.Vector2
+	Class			base_class.IBaseClass
+	TilesPerSecond	int
+	LastMovement	time.Time
 }
 
 func (this *Character) isValid() error {
@@ -70,5 +73,6 @@ func GetCharacterByName(db *DB, name string, userID int) *Character {
 	}
 
 	character.Class = classes.GetClass(class)
+	character.TilesPerSecond = 5
 	return &character
 }

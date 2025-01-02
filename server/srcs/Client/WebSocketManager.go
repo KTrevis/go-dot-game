@@ -42,7 +42,7 @@ func (this *WebSocketManager) removeOnlineUser(socket *websocket.Conn) {
 	}
 }
 
-func (this *WebSocketManager) RemoveClient(socket *websocket.Conn) {
+func (this *WebSocketManager) RemoveClient(socket *websocket.Conn, reason string) {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
 
@@ -54,7 +54,7 @@ func (this *WebSocketManager) RemoveClient(socket *websocket.Conn) {
 
 	this.removeOnlineUser(socket)
 	delete(this.Clients, socket)
-	socket.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1000, "invalid request"))
+	socket.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1000, reason))
 	socket.Close()
 }
 
