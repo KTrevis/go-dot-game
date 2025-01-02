@@ -1,12 +1,14 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"server/database"
 	"strings"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -33,7 +35,16 @@ func (this *Client) getFormattedIP() string {
 	return str
 }
 
+func (this *Client) save() {
+	conn, _ := this.manager.DB.Acquire(context.TODO())
+	defer conn.Release()
+	conn.Exec(context.TODO(), "UPDATE characters SET level=$1, xp=$2, x=$3, y=$4 WHERE name=$5;",
+		this.character.Level, this.character.XP,
+		this.character.Position.X, this.character.Position.Y, this.character.Name)
+}
+
 func (this *Client) disconnect(reason string) {
+	this.save()
 	this.manager.RemoveClient(this.socket, reason)
 }
 

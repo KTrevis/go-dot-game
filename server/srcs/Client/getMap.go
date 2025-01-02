@@ -25,9 +25,9 @@ func (this *Client) getMap() error {
 		return fmt.Errorf("unmarshal failed: %s", this.body)
 	}
 
-	mapData := gamemaps.NewMapData(data.Map)
+	gamemap := gamemaps.GetMap(data.Map)
 
-	if mapData == nil {
+	if gamemap == nil {
 		const msg =  "could not find requested map"
 		this.sendMessage("GET_MAP", &Dictionary{
 			"error": msg,
@@ -36,7 +36,7 @@ func (this *Client) getMap() error {
 	}
 
 	this.sendMessage("GET_MAP", &Dictionary{
-		"map": mapData.Map,
+		"map": gamemap,
 	})
 	return nil
 }

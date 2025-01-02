@@ -26,7 +26,7 @@ func (this *Client) canUpdatePos() error {
 	return nil
 }
 
-func (this *Client) teleported(newPos *utils.Vector2) bool {
+func (this *Client) teleported(newPos *utils.Vector2i) bool {
 	vec := this.character.Position.Substract(newPos)
 
 	if vec.X < -1 || vec.X > 1 {
@@ -49,7 +49,7 @@ func (this *Client) movedTooFast() bool {
 	}
 
 	timeSinceMov := now.Sub(this.character.LastMovement)
-	timeSinceMov += time.Millisecond * 30
+	timeSinceMov += time.Millisecond * 100
 	this.character.LastMovement = now
 	timePerTile := time.Second / time.Duration(this.character.TilesPerSecond)
 
@@ -62,7 +62,7 @@ func (this *Client) updatePlayerPosition() error {
 	}
 
 	var data struct {
-		Position utils.Vector2
+		Position utils.Vector2i
 	}
 
 	err := json.Unmarshal([]byte(this.body), &data)

@@ -16,7 +16,7 @@ type Character struct {
 	Name			string
 	Level			int
 	XP				int
-	Position		utils.Vector2
+	Position		utils.Vector2i
 	Class			base_class.IBaseClass
 	TilesPerSecond	int
 	LastMovement	time.Time

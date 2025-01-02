@@ -35,9 +35,10 @@ func (this *Client) enterWorld() error {
 		return errors.New(msg)
 	}
 
+	gamemap := gamemaps.GetMap("test")
 	this.sendMessage("ENTER_WORLD", &Dictionary{
 		"character": this.character,
-		"map": gamemaps.NewMapData("test").Map,
+		"map": gamemap,
 	})
 	return nil
 }

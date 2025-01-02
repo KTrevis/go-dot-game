@@ -5,66 +5,55 @@ import (
 	"fmt"
 	"os"
 	"server/utils"
-	"strings"
 )
 
-type MapData struct {
-	Data []int
-	Map [][]utils.Vector2
-	Height int
-	Width int
-}
-
-func getData(mapName string) *MapData {
-	var data MapData
+func getMapData(mapName string) []int {
+	var data []int
 
 	mapName = fmt.Sprintf("./maps/%s.tmj", mapName)
-	Data, err := os.ReadFile(mapName)
+	file, err := os.ReadFile(mapName)
 	
 	if err != nil {
 		fmt.Printf("MapData getData: failed to read file")
 		return nil
 	}
 
-	str := string(Data)
-	str = str[strings.Index(str, "[") + 1:]
-	str = str[:strings.LastIndex(str, "]")]
-	str = str[:strings.LastIndex(str, "]")]
-
-	err = json.Unmarshal([]byte(str), &data)
+	err = json.Unmarshal(file, &data)
 
 	if err != nil {
-		fmt.Printf("MapData getData: unmarshal failed: %s", str)
+		fmt.Printf("MapData getData: unmarshal failed: %s", string(file))
 		return nil
 	}
-	return &data
+	return data
 }
 
-func NewMapData(mapName string) *MapData {
-	data := getData(mapName)
+func GetMap(mapName string) [][]utils.Vector2i {
+	data := getMapData(mapName)
+	var vec [][]utils.Vector2i
+	const MAP_SIZE = 50
 
 	if data == nil {
 		return nil
 	}
 
-	for i := 0; i < len(data.Data); {
-		line := make([]utils.Vector2, 0, data.Width)
+	for i := 0; i < len(data); {
+		line := make([]utils.Vector2i, 0, MAP_SIZE)
 
-		for range data.Width {
-			line = append(line, utils.Vector2{
-				X: (data.Data[i] - 1) % 11,
-				Y: (data.Data[i] - 1) / 11,
+		for range MAP_SIZE {
+			line = append(line, utils.Vector2i{
+				X: (data[i] - 1) % 11,
+				Y: (data[i] - 1) / 11,
 			})
 			i++
-			if i >= len(data.Data) {
+			if i >= len(data) {
 				break
 			}
 		}
-		data.Map = append(data.Map, line)
 
-		if i >= len(data.Data) {
+		vec = append(vec, line)
+		if i >= len(data) {
 			break
 		}
 	}
-	return data
+	return vec
 }
