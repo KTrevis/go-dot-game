@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"server/database"
-	gamemaps "server/maps"
+	"server/database/Character"
+	"server/chunks"
 )
 
 func (this *Client) enterWorld() error {
@@ -27,7 +27,7 @@ func (this *Client) enterWorld() error {
 	conn, _ := this.manager.DB.Acquire(context.TODO())
 	defer conn.Release()
 
-	this.character = database.GetCharacterByName(conn, data.Character, this.user.ID)
+	this.character = character.GetCharacterByName(conn, data.Character, this.user.ID)
 
 	if this.character == nil {
 		const msg = "failed to find character"
@@ -35,7 +35,7 @@ func (this *Client) enterWorld() error {
 		return errors.New(msg)
 	}
 
-	gamemap := gamemaps.GetMap("test")
+	gamemap := chunks.StoreChunk("test")
 	this.sendMessage("ENTER_WORLD", &Dict{
 		"character": this.character,
 		"map": gamemap,

@@ -1,4 +1,4 @@
-package gamemaps
+package chunks
 
 import (
 	"encoding/json"
@@ -7,11 +7,13 @@ import (
 	"server/utils"
 )
 
-func getMapData(mapName string) []int {
-	var data []int
+func readFile(filename string) []int {
+	var data struct {
+		Tiles []int
+	}
 
-	mapName = fmt.Sprintf("./maps/%s.tmj", mapName)
-	file, err := os.ReadFile(mapName)
+	filename = fmt.Sprintf("./chunks/%s.tmj", filename)
+	file, err := os.ReadFile(filename)
 	
 	if err != nil {
 		fmt.Printf("MapData getData: failed to read file")
@@ -24,13 +26,14 @@ func getMapData(mapName string) []int {
 		fmt.Printf("MapData getData: unmarshal failed: %s", string(file))
 		return nil
 	}
-	return data
+	return data.Tiles
 }
 
-func GetMap(mapName string) [][]utils.Vector2i {
-	data := getMapData(mapName)
+func StoreChunk(filename string) [][]utils.Vector2i {
+	data := readFile(filename)
 	var vec [][]utils.Vector2i
 	const MAP_SIZE = 50
+	const SHEET_COLUMNS = 11
 
 	if data == nil {
 		return nil
@@ -41,8 +44,8 @@ func GetMap(mapName string) [][]utils.Vector2i {
 
 		for range MAP_SIZE {
 			line = append(line, utils.Vector2i{
-				X: (data[i] - 1) % 11,
-				Y: (data[i] - 1) / 11,
+				X: (data[i] - 1) % SHEET_COLUMNS,
+				Y: (data[i] - 1) / SHEET_COLUMNS,
 			})
 			i++
 			if i >= len(data) {

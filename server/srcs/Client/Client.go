@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"server/database"
+	character "server/database/Character"
 	"strings"
 
 	"github.com/gorilla/websocket"
@@ -19,7 +20,7 @@ type Client struct {
 	body			string
 	authenticated	bool
 	user			database.User
-	character		*database.Character
+	character		*character.Character
 }
 
 type Dict map[string]any
@@ -36,11 +37,18 @@ func (this *Client) getFormattedIP() string {
 }
 
 func (this *Client) save() {
+	if this.character == nil {
+		return
+	}
+
 	conn, _ := this.manager.DB.Acquire(context.TODO())
 	defer conn.Release()
-	conn.Exec(context.TODO(), "UPDATE characters SET level=$1, xp=$2, x=$3, y=$4 WHERE name=$5;",
+
+	const query =  "UPDATE characters SET level=$1, xp=$2, x=$3, y=$4 WHERE name=$5;"
+	conn.Exec(context.TODO(), query,
 		this.character.Level, this.character.XP,
-		this.character.Position.X, this.character.Position.Y, this.character.Name)
+		this.character.Position.X, this.character.Position.Y,
+		this.character.Name)
 }
 
 func (this *Client) disconnect(reason string) {

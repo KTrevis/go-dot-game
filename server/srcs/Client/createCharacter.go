@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"log"
 	"server/classes"
-	"server/database"
+	"server/database/Character"
 )
 
 
@@ -31,7 +31,7 @@ func (this *Client) createCharacter() error {
 	}
 
 
-	character := database.Character{
+	character := character.Character{
 		UserID: this.user.ID,
 		Name: data.Name,
 		Level: 1,

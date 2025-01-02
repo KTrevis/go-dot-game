@@ -26,7 +26,7 @@ func createTable(db *DB, name string, fields []string) {
 	_, err := db.Exec(context.TODO(), query)
 
 	if err == nil {
-		log.Printf("created %s table", name)
+		log.Printf("TABLE CREATED: %s", name)
 	} else {
 		log.Println(err.Error())
 	}
@@ -53,6 +53,17 @@ func createCharactersTable(db *DB) {
 	})
 }
 
+func createChunksTable(db *DB) {
+	createTable(db, "maps", []string{
+		"id SERIAL PRIMARY KEY",
+		"name TEXT NOT NULL",
+		"tiles TEXT NOT NULL",
+		"x INTEGER NOT NULL",
+		"y INTEGER NOT NULL",
+		"UNIQUE (x, y)",
+	})
+}
+
 func connectToDB() *DBPool {
 	user := os.Getenv("POSTGRES_USER")
 	password := os.Getenv("POSTGRES_PASSWORD")
@@ -74,6 +85,7 @@ func SetupDB() *DBPool {
 
 	createUserTable(conn)
 	createCharactersTable(conn)
+	createChunksTable(conn)
 
 	return db
 }
