@@ -2,13 +2,12 @@ package chunks
 
 import "server/utils"
 
-const (
-	TOP = iota
-	BOTTOM
-	LEFT
-	RIGHT
-	CHUNK_SIZE = 50
-)
+var SPAWN = utils.Vector2i{
+	X: 0,
+	Y: 0,
+}
+
+const CHUNK_SIZE = 50
 
 type Chunk struct {
 	Tiles		[][]utils.Vector2i
@@ -27,6 +26,7 @@ func NewChunkHandler() *ChunkHandler {
 	chunks := [...]string {
 		"test",
 		"test1",
+		"test2",
 	}
 
 	for _, v := range chunks {

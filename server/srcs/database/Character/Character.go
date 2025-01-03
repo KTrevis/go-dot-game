@@ -51,12 +51,12 @@ func (this *Character) ConvertPosToChunk() *utils.Vector2i {
 
 func (this *Character) IsOnChunkEdge(futurePos *utils.Vector2i) bool {
 	if futurePos.X != this.Position.X &&
-		futurePos.X % (chunks.CHUNK_SIZE - 1) == 0 {
+		futurePos.X % chunks.CHUNK_SIZE == 0 {
 		return true
 	}
 
 	if futurePos.Y != this.Position.Y &&
-		futurePos.Y % (chunks.CHUNK_SIZE - 1) == 0 {
+		futurePos.Y % chunks.CHUNK_SIZE == 0 {
 		return true
 	}
 	return false

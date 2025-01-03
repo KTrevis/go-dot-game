@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"server/chunks"
 	"server/database/Character"
 )
 
@@ -33,12 +34,14 @@ func (this *Client) enterWorld() error {
 		this.disconnect(msg)
 		return errors.New(msg)
 	}
-	fmt.Printf("this.character.ConvertPosToChunk(): %v\n", this.character.ConvertPosToChunk())
+
 	gamemap := this.chunks.Chunks[*this.character.ConvertPosToChunk()]
+
 	if gamemap == nil {
-		fmt.Printf("gamemap: %v\n", gamemap)
-		return nil
+		this.character.Position = chunks.SPAWN
+		gamemap = this.chunks.Chunks[this.character.Position]
 	}
+
 	this.sendMessage("ENTER_WORLD", &Dict{
 		"character": this.character,
 		"map": gamemap,
