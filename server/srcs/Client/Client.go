@@ -68,10 +68,12 @@ func (this *Client) treatMessage() {
 		"CREATE_CHARACTER": this.createCharacter,
 		"DELETE_CHARACTER": this.deleteCharacter,
 		"GET_CHARACTER_LIST": this.getCharacterList,
-		"GET_MAP": this.getMap,
 		"ENTER_WORLD": this.enterWorld,
 		"UPDATE_PLAYER_POSITION": this.updatePlayerPosition,
-		"IN_GAME": this.inGame,
+		"GET_CHUNKS": func() error {
+			this.sendNearChunks()
+			return nil
+		},
 	}
 
 	fn, ok := m[this.msgType]
