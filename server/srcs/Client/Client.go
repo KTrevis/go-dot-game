@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"server/chunks"
 	"server/database"
 	character "server/database/Character"
 	"strings"
@@ -21,6 +22,7 @@ type Client struct {
 	authenticated	bool
 	user			database.User
 	character		*character.Character
+	chunks			*chunks.ChunkHandler
 }
 
 type Dict map[string]any
@@ -69,6 +71,7 @@ func (this *Client) treatMessage() {
 		"GET_MAP": this.getMap,
 		"ENTER_WORLD": this.enterWorld,
 		"UPDATE_PLAYER_POSITION": this.updatePlayerPosition,
+		"IN_GAME": this.inGame,
 	}
 
 	fn, ok := m[this.msgType]

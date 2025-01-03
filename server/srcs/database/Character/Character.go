@@ -3,6 +3,7 @@ package character
 import (
 	"context"
 	"fmt"
+	"server/chunks"
 	"server/classes"
 	"server/classes/base"
 	"server/database"
@@ -42,10 +43,21 @@ func GetCharacterByName(db *database.DB, name string, userID int) *Character {
 }
 
 func (this *Character) ConvertPosToChunk() *utils.Vector2i {
-	const CHUNK_SIZE = 50
-
 	return &utils.Vector2i{
-		X: this.Position.X / CHUNK_SIZE - 1,
-		Y: this.Position.Y / CHUNK_SIZE - 1,
+		X: this.Position.X / (chunks.CHUNK_SIZE - 1),
+		Y: this.Position.Y / (chunks.CHUNK_SIZE - 1),
 	}
+}
+
+func (this *Character) IsOnChunkEdge(futurePos *utils.Vector2i) bool {
+	if futurePos.X != this.Position.X &&
+		futurePos.X % (chunks.CHUNK_SIZE - 1) == 0 {
+		return true
+	}
+
+	if futurePos.Y != this.Position.Y &&
+		futurePos.Y % (chunks.CHUNK_SIZE - 1) == 0 {
+		return true
+	}
+	return false
 }

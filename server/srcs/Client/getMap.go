@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"server/chunks"
 )
 
 func (this *Client) getMap() error {
@@ -25,18 +24,18 @@ func (this *Client) getMap() error {
 		return fmt.Errorf("unmarshal failed: %s", this.body)
 	}
 
-	gamemap := chunks.StoreChunk(data.Map)
-
-	if gamemap == nil {
-		const msg =  "could not find requested map"
-		this.sendMessage("GET_MAP", &Dict{
-			"error": msg,
-		})
-		return errors.New(msg)
-	}
-
-	this.sendMessage("GET_MAP", &Dict{
-		"map": gamemap,
-	})
+	// gamemap := chunks.StoreChunk(data.Map)
+	//
+	// if gamemap == nil {
+	// 	const msg =  "could not find requested map"
+	// 	this.sendMessage("GET_MAP", &Dict{
+	// 		"error": msg,
+	// 	})
+	// 	return errors.New(msg)
+	// }
+	//
+	// this.sendMessage("GET_MAP", &Dict{
+	// 	"map": gamemap,
+	// })
 	return nil
 }

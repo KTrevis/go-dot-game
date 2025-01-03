@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"server/CLI"
 	"server/Client"
-	"server/database"
+	"server/chunks"
 	"server/views"
 	"server/views/api"
 
@@ -36,7 +36,7 @@ func websocketCLI(context *gin.Context, manager *client.WebSocketManager) {
 	go cli.Loop()
 }
 
-func websocketClient(context *gin.Context, manager *client.WebSocketManager) {
+func websocketClient(context *gin.Context, manager *client.WebSocketManager, chunks *chunks.ChunkHandler) {
 	socket, err := upgrader.Upgrade(context.Writer, context.Request, nil)
 
 	if err != nil {
@@ -44,7 +44,7 @@ func websocketClient(context *gin.Context, manager *client.WebSocketManager) {
 		return
 	}
 
-	manager.AddClient(socket)
+	manager.AddClient(socket, chunks)
 }
 
 func startCLI(manager *client.WebSocketManager) {
@@ -57,12 +57,11 @@ func startCLI(manager *client.WebSocketManager) {
 	routerCLI.Run("127.0.0.1:81")
 }
 
-func setupViews(router *gin.Engine, manager *client.WebSocketManager) {
-
+func setupViews(router *gin.Engine, manager *client.WebSocketManager, chunks *chunks.ChunkHandler) {
 	router.GET("/", views.Index)
 
 	router.GET("/websocket", func(context *gin.Context) {
-		websocketClient(context, manager)
+		websocketClient(context, manager, chunks)
 	})
 
 	router.POST("/api/register", func(c *gin.Context) {
@@ -75,10 +74,10 @@ func setupViews(router *gin.Engine, manager *client.WebSocketManager) {
 
 func main() {
 	manager := client.NewWebSocketManager()
-	manager.DB = database.SetupDB()
+	chunks := chunks.NewChunkHandler()
 	router := gin.Default()
 
 	go startCLI(manager)
-	setupViews(router, manager)
+	setupViews(router, manager, chunks)
 	router.Run(":80")
 }

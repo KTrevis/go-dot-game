@@ -1,6 +1,7 @@
 package client
 
 import (
+	"server/chunks"
 	"server/database"
 	"sync"
 
@@ -16,12 +17,13 @@ type WebSocketManager struct {
 
 func NewWebSocketManager() *WebSocketManager {
 	return &WebSocketManager{
+		DB: database.SetupDB(),
 		Clients: make(map[*websocket.Conn]*Client),
 		onlineUsers: make(map[int]bool),
 	}
 }
 
-func (this *WebSocketManager) AddClient(socket *websocket.Conn) {
+func (this *WebSocketManager) AddClient(socket *websocket.Conn, chunks *chunks.ChunkHandler) {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
 
@@ -29,6 +31,7 @@ func (this *WebSocketManager) AddClient(socket *websocket.Conn) {
 		manager: this,
 		socket:  socket,
 		authenticated: false,
+		chunks: chunks,
 	}
 	go this.Clients[socket].Loop()
 }

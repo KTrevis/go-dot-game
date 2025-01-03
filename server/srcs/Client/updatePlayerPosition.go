@@ -56,6 +56,33 @@ func (this *Client) movedTooFast() bool {
 	return timeSinceMov < timePerTile
 }
 
+func (this *Client) sendSingleChunk(pos *utils.Vector2i) {
+	chunk := this.chunks.Chunks[*pos]
+	if chunk != nil {
+		this.sendMessage("SEND_MAP", &Dict{
+			"map": chunk,
+		})
+	}
+}
+
+func (this *Client) sendNearChunks() {
+	chunkPos := this.character.ConvertPosToChunk()
+	directions := []utils.Vector2i{
+		{X: chunkPos.X, Y: chunkPos.Y - 1},		// top
+		{X: chunkPos.X + 1, Y: chunkPos.Y - 1},	// upper right
+		{X: chunkPos.X + 1, Y: chunkPos.Y}, 	// right
+		{X: chunkPos.X + 1, Y: chunkPos.Y + 1},	// bottom right
+		{X: chunkPos.X, Y: chunkPos.Y + 1},		// bottom
+		{X: chunkPos.X - 1, Y: chunkPos.Y + 1}, // bottom left
+		{X: chunkPos.X - 1, Y: chunkPos.Y},		// left
+		{X: chunkPos.X - 1, Y: chunkPos.Y - 1},	// upper left
+	}
+
+	for _, v := range directions {
+		this.sendSingleChunk(&v)
+	}
+}
+
 func (this *Client) updatePlayerPosition() error {
 	if err := this.canUpdatePos(); err != nil {
 		return err
@@ -81,6 +108,10 @@ func (this *Client) updatePlayerPosition() error {
 		const msg = "moved too fast"
 		this.disconnect(msg)
 		return errors.New(msg)
+	}
+
+	if this.character.IsOnChunkEdge(&data.Position) {
+		this.sendNearChunks()
 	}
 
 	this.character.Position = data.Position

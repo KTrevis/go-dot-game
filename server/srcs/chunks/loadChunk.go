@@ -7,10 +7,14 @@ import (
 	"server/utils"
 )
 
-func readFile(filename string) []int {
-	var data struct {
-		Tiles []int
-	}
+type MapData struct {
+	Name		string
+	Position	utils.Vector2i
+	Tiles 		[]int
+}
+
+func readFile(filename string) *MapData {
+	data := &MapData{}
 
 	filename = fmt.Sprintf("./chunks/%s.tmj", filename)
 	file, err := os.ReadFile(filename)
@@ -26,37 +30,44 @@ func readFile(filename string) []int {
 		fmt.Printf("MapData getData: unmarshal failed: %s", string(file))
 		return nil
 	}
-	return data.Tiles
+	return data
 }
 
-func StoreChunk(filename string) [][]utils.Vector2i {
-	data := readFile(filename)
-	var vec [][]utils.Vector2i
+func loadChunk(filename string) *Chunk {
 	const MAP_SIZE = 50
-	const SHEET_COLUMNS = 11
+	const SHEET_SIZE = 11
+
+	data := readFile(filename)
 
 	if data == nil {
 		return nil
 	}
 
-	for i := 0; i < len(data); {
+	chunk := &Chunk{
+		Name: data.Name,
+		Position: data.Position,
+		Tiles: make([][]utils.Vector2i, 0, MAP_SIZE),
+	}
+
+
+	for i := 0; i < len(data.Tiles); {
 		line := make([]utils.Vector2i, 0, MAP_SIZE)
 
 		for range MAP_SIZE {
 			line = append(line, utils.Vector2i{
-				X: (data[i] - 1) % SHEET_COLUMNS,
-				Y: (data[i] - 1) / SHEET_COLUMNS,
+				X: (data.Tiles[i] - 1) % SHEET_SIZE,
+				Y: (data.Tiles[i] - 1) / SHEET_SIZE,
 			})
 			i++
-			if i >= len(data) {
+			if i >= len(data.Tiles) {
 				break
 			}
 		}
+		chunk.Tiles = append(chunk.Tiles, line)
 
-		vec = append(vec, line)
-		if i >= len(data) {
+		if i >= len(data.Tiles) {
 			break
 		}
 	}
-	return vec
+	return chunk
 }

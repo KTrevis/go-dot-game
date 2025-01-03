@@ -11,26 +11,32 @@ const (
 )
 
 type Chunk struct {
+	Tiles		[][]utils.Vector2i
 	Position	utils.Vector2i
-	Tiles		[]utils.Vector2i
 	Name		string
 }
 
 type ChunkHandler struct {
-	chunks map[utils.Vector2i]*Chunk
+	Chunks map[utils.Vector2i]*Chunk
 }
 
 func NewChunkHandler() *ChunkHandler {
-	handler := &ChunkHandler{}
-	return handler
-}
-
-func (this *ChunkHandler) AddNewMap(chunk *Chunk) {
-	_, ok := this.chunks[chunk.Position]
-
-	if ok {
-		panic("tried to replace a chunk with another one")
+	handler := &ChunkHandler{
+		Chunks: make(map[utils.Vector2i]*Chunk),
+	}
+	chunks := [...]string {
+		"test",
+		"test1",
 	}
 
-	this.chunks[chunk.Position] = chunk
+	for _, v := range chunks {
+		chunk := loadChunk(v)
+
+		if _, ok := handler.Chunks[chunk.Position]; ok {
+			panic("trying to create two chunks at the same position")
+		}
+
+		handler.Chunks[chunk.Position] = chunk
+	}
+	return handler
 }
