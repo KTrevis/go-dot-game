@@ -8,24 +8,6 @@ import (
 	"time"
 )
 
-func (this *Client) canUpdatePos() error {
-	if this.character == nil {
-		const msg = "tried changing position without being in game"
-		this.disconnect(msg)
-		return errors.New("tried changing position without being in game") 
-	}
-
-	if !this.authenticated {
-		// this should never happen since the player
-		// has to be authenticated to have a non nil character
-		const msg = "tried changing position unauthenticated"
-		this.disconnect(msg)
-		return errors.New(msg) 
-	}
-
-	return nil
-}
-
 func (this *Client) teleported(newPos *utils.Vector2i) bool {
 	vec := this.character.Position.Sub(newPos)
 
@@ -56,36 +38,30 @@ func (this *Client) movedTooFast() bool {
 	return timeSinceMov < timePerTile
 }
 
-func (this *Client) sendSingleChunk(pos *utils.Vector2i) {
-	chunk := this.chunks.Chunks[*pos]
-	if chunk != nil {
-		this.sendMessage("SEND_MAP", &Dict{
-			"map": chunk,
-		})
-	}
-}
-
-func (this *Client) sendNearChunks() {
-	chunkPos := this.character.ConvertPosToChunk()
-	directions := []utils.Vector2i{
-		{X: chunkPos.X, Y: chunkPos.Y - 1},		// top
-		{X: chunkPos.X + 1, Y: chunkPos.Y - 1},	// upper right
-		{X: chunkPos.X + 1, Y: chunkPos.Y}, 	// right
-		{X: chunkPos.X + 1, Y: chunkPos.Y + 1},	// bottom right
-		{X: chunkPos.X, Y: chunkPos.Y + 1},		// bottom
-		{X: chunkPos.X - 1, Y: chunkPos.Y + 1}, // bottom left
-		{X: chunkPos.X - 1, Y: chunkPos.Y},		// left
-		{X: chunkPos.X - 1, Y: chunkPos.Y - 1},	// upper left
+func (this *Client) sendSurroundingChunks() error {
+	if this.character == nil {
+		return errors.New("getting chunks without being ingame")
 	}
 
-	for _, v := range directions {
-		this.sendSingleChunk(&v)
+	chunks := this.character.GetSurroundingChunks()
+
+	for _, v := range *chunks {
+		chunk, ok := this.chunks.Chunks[v]
+
+		if ok {
+			this.sendMessage("SEND_MAP", &Dict{
+				"map": chunk,
+			})
+		}
 	}
+	return nil
 }
 
 func (this *Client) updatePlayerPosition() error {
-	if err := this.canUpdatePos(); err != nil {
-		return err
+	if this.character == nil {
+		const msg = "tried changing position without being ingame"
+		this.disconnect(msg)
+		return errors.New("tried changing position without being ingame") 
 	}
 
 	var data struct {
@@ -111,10 +87,10 @@ func (this *Client) updatePlayerPosition() error {
 	}
 
 	if this.character.IsOnChunkEdge(&data.Position) {
-		this.sendNearChunks()
+		this.sendSurroundingChunks()
 	}
 
 	this.character.Position = data.Position
-
+	this.sendPosition(this.character)
 	return nil
 }

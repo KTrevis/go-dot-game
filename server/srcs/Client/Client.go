@@ -70,10 +70,7 @@ func (this *Client) treatMessage() {
 		"GET_CHARACTER_LIST": this.getCharacterList,
 		"ENTER_WORLD": this.enterWorld,
 		"UPDATE_PLAYER_POSITION": this.updatePlayerPosition,
-		"GET_CHUNKS": func() error {
-			this.sendNearChunks()
-			return nil
-		},
+		"GET_CHUNKS": this.sendSurroundingChunks,
 	}
 
 	fn, ok := m[this.msgType]

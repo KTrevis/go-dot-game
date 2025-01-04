@@ -12,7 +12,7 @@ type WebSocketManager struct {
 	Clients map[*websocket.Conn]*Client
 	onlineUsers map[int]bool
 	DB		*database.DBPool
-	mutex   sync.Mutex
+	mutex   sync.RWMutex
 }
 
 func NewWebSocketManager() *WebSocketManager {
@@ -37,6 +37,7 @@ func (this *WebSocketManager) AddClient(socket *websocket.Conn, chunks *chunks.C
 }
 
 func (this *WebSocketManager) removeOnlineUser(socket *websocket.Conn) {
+	// DO NOT USE MUTEX HERE
 	user := &this.Clients[socket].user
 	_, ok := this.onlineUsers[user.ID]
 
@@ -51,22 +52,12 @@ func (this *WebSocketManager) RemoveClient(socket *websocket.Conn, reason string
 
 	_, ok := this.Clients[socket]
 
-	if !ok {
-		return
+	if ok {
+		this.removeOnlineUser(socket)
+		delete(this.Clients, socket)
+		socket.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1000, reason))
+		socket.Close()
 	}
-
-	this.removeOnlineUser(socket)
-	delete(this.Clients, socket)
-	socket.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1000, reason))
-	socket.Close()
-}
-
-func (this *WebSocketManager) UserIsOnline(user *database.User) bool {
-	this.mutex.Lock()
-	defer this.mutex.Unlock()
-
-	_, ok := this.onlineUsers[user.ID]
-	return ok
 }
 
 func (this *WebSocketManager) AddOnlineUser(user *database.User) {

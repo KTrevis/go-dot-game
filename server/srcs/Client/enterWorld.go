@@ -35,7 +35,7 @@ func (this *Client) enterWorld() error {
 		return errors.New(msg)
 	}
 
-	gamemap := this.chunks.Chunks[*this.character.ConvertPosToChunk()]
+	gamemap := this.chunks.Chunks[*this.character.GetChunk()]
 
 	if gamemap == nil {
 		this.character.Position = chunks.SPAWN
@@ -46,5 +46,6 @@ func (this *Client) enterWorld() error {
 		"character": this.character,
 		"map": gamemap,
 	})
+	this.sendPosition(this.character)
 	return nil
 }
